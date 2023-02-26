@@ -11,6 +11,7 @@ namespace force::f32 {
         vec2(float x, float y);
         vec2(const vec2&);
         vec2(vec2&&);
+        vec2(const float* _arr);
 
         vec2&       operator=(const vec2&) noexcept;
         vec2&       operator=(vec2&&)      noexcept;
@@ -27,8 +28,6 @@ namespace force::f32 {
 
         ~vec2() = default;
     };
-
-    [[nodiscard]] vec2           make_unitvec2();
     [[nodiscard]] float          dot(const vec2& v1, const vec2& v2);
     // Actually this cross product will returns the area
     // of the two vectors, so that is a scalar.

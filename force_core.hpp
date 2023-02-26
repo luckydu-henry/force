@@ -2,7 +2,6 @@
 #define _FORCE_CORE_HPP_
 
 namespace force {
-
     template <
         typename _Subclass, typename _ValueType,
         unsigned int dimension>
@@ -162,5 +161,17 @@ namespace force {
     inline _ValueType wof(basic_vector<_Subclass, _ValueType, dimension>& vec) {
         return vec[3];
     }
+
+
+    namespace f32 {
+        constexpr float unit_vec[4] = { 1.f, 1.f, 1.f, 1.f };
+        constexpr float zero_vec[4] = { 1.f, 1.f, 1.f, 1.f };
+    }
+
+    namespace f64 {
+        constexpr double unit_vec[4] = { 1.0, 1.0, 1.0, 1.0 };
+        constexpr double zero_vec[4] = { 0.0, 0.0, 0.0, 0.0 };
+    }
+
 }
 #endif //! _FORCE_CORE_HPP_

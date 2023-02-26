@@ -14,6 +14,10 @@ namespace force::f32 {
         _M_vec[0] = _right[0];
         _M_vec[1] = _right[1];
     }
+    vec2::vec2(const float* _arr) {
+        at(0) = _arr[0];
+        at(1) = _arr[1];
+    }
     vec2& vec2::operator=(const vec2& v) noexcept {
         (*this)[0] = v[0];
         (*this)[1] = v[1];
@@ -66,11 +70,6 @@ namespace force::f32 {
             _M_vec[1] / s
         };
     }
-
-    vec2 make_unitvec2() {
-        return vec2{ 1.f, 1.f };
-    }
-
     float dot(const vec2& v1, const vec2& v2) {
         return v1[0] * v2[0] + v1[1] * v2[1];
     }
