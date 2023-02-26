@@ -3,10 +3,10 @@
 #include <cmath>
 
 namespace force::f32 {
-    mat2x2::mat2x2(float v11, float v21, float v12, float v22) {
+    mat2x2::mat2x2(float v11, float v12, float v21, float v22) {
         at(0, 0) = v11;
-        at(1, 0) = v21;
         at(0, 1) = v12;
+        at(1, 0) = v21;
         at(1, 1) = v22;
     }
     mat2x2::mat2x2(const vec2& v1, const vec2& v2) {

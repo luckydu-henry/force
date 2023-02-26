@@ -3,7 +3,6 @@
 
 namespace force {
 
-    // Using CRTP way
     template <
         typename _Subclass, typename _ValueType,
         unsigned int dimension>
@@ -11,6 +10,8 @@ namespace force {
     protected:
         _ValueType _M_vec[dimension];
     public:
+        static constexpr unsigned int vec_dimension = dimension;
+
         _Subclass             operator+(const _Subclass& v) noexcept {
             return static_cast<_Subclass*>(this)->operator+(v);
         }
@@ -77,6 +78,9 @@ namespace force {
     protected:
         _ValueType _M_mat[row * column];
     public:
+        static constexpr unsigned int mat_row = row;
+        static constexpr unsigned int mat_col = column;
+
         _Subclass             operator+(const _Subclass& v) noexcept {
             return static_cast<_Subclass*>(this)->operator+(v);
         }

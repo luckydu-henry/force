@@ -1,10 +1,14 @@
 #ifndef _FORCE_F32_EXT_OUTPUT_HPP_
 #define _FORCE_F32_EXT_OUTPUT_HPP_
 #include <iostream>
-#include "mat2x2.h"
-#include "vec2.h"
+namespace force {
+    namespace f32 {
+        typedef class vec2 vec2;
+        typedef class mat2x2 mat2x2;
+    }
+}
 std::ostream& operator<<(std::ostream& _Stream, const force::f32::vec2& v) {
-    _Stream << "[" << v[0] << "," << v[1] << "]";
+    _Stream << "[" << v[0] << ", " << v[1] << "]";
     return _Stream;
 }
 
