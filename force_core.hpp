@@ -53,6 +53,12 @@ namespace force {
             *static_cast<_Subclass*>(this) = *static_cast<_Subclass*>(this) / s;
             return *static_cast<_Subclass*>(this);
         }
+        _ValueType&           at(unsigned int index)  noexcept {
+            return _M_vec[index];
+        }
+        const _ValueType&     at(unsigned int index) const noexcept {
+            return _M_vec[index];
+        }
         _ValueType&           operator[](unsigned int index)  noexcept {
             return _M_vec[index];
         }
@@ -69,7 +75,7 @@ namespace force {
         unsigned int row, unsigned int column>
     class basic_matrix {
     protected:
-        _ValueType _M_mat[row][column];
+        _ValueType _M_mat[row * column];
     public:
         _Subclass             operator+(const _Subclass& v) noexcept {
             return static_cast<_Subclass*>(this)->operator+(v);
@@ -120,11 +126,11 @@ namespace force {
             *static_cast<_Subclass*>(this) = *static_cast<_Subclass*>(this) * v;
             return *static_cast<_Subclass*>(this);
         }
-        _ValueType*            operator[](unsigned int index) {
-            return _M_mat[index];
+        _ValueType&            at(unsigned int r, unsigned int c) {
+            return _M_mat[r * column + c];
         }
-        const _ValueType*      operator[](unsigned int index) const {
-            return _M_mat[index];
+        const _ValueType&      at(unsigned int r, unsigned int c) const {
+            return _M_mat[r * column + c];
         }
     };
 
