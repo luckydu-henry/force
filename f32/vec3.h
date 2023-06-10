@@ -1,7 +1,7 @@
 #ifndef _FORCE_F32_VEC3_H_
 #define _FORCE_F32_VEC3_H_
 #include "../force_core.hpp"
-namespace force::f32 {
+namespace force::__opm32 {
 
     class vec3 : public basic_vector<vec3, float, 3> {
     public:

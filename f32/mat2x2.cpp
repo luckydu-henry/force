@@ -2,7 +2,7 @@
 #include "vec2.h"
 #include <cmath>
 
-namespace force::f32 {
+namespace force::__opm32 {
     mat2x2::mat2x2(float v11, float v12, float v21, float v22) {
         at(0, 0) = v11;
         at(0, 1) = v12;

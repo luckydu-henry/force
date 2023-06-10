@@ -163,12 +163,12 @@ namespace force {
     }
 
 
-    namespace f32 {
+    namespace __opm32 {
         constexpr float unit_vec[4] = { 1.f, 1.f, 1.f, 1.f };
         constexpr float zero_vec[4] = { 1.f, 1.f, 1.f, 1.f };
     }
 
-    namespace f64 {
+    namespace __opm64 {
         constexpr double unit_vec[4] = { 1.0, 1.0, 1.0, 1.0 };
         constexpr double zero_vec[4] = { 0.0, 0.0, 0.0, 0.0 };
     }

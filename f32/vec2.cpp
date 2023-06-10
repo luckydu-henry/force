@@ -1,7 +1,7 @@
 #include "vec2.h"
-#include "basic_math.h"
+#include "fmath.hpp"
 
-namespace force::f32 {
+namespace force::__opm32 {
     vec2::vec2(float x, float y) {
         _M_vec[0] = x;
         _M_vec[1] = y;

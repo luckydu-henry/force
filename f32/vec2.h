@@ -3,7 +3,7 @@
 
 #include "../force_core.hpp"
 
-namespace force::f32 {
+namespace force::__opm32 {
 
     class vec2 : public basic_vector<vec2, float, 2> {
     public:

@@ -1,7 +1,7 @@
 #ifndef _FORCE_F32_MAT2X2_H_
 #define _FORCE_F32_MAT2X2_H_
 #include "../force_core.hpp"
-namespace force::f32 {
+namespace force::__opm32 {
 
     typedef class vec2 vec2;
 
