@@ -31,6 +31,16 @@ namespace force::simd {
         else if constexpr (Cmd == c_div) C = _mm_div_ps(A, S);
         _mm_store_ps(dst, C);
     }
+    inline void a_init_vec4f(float* a, const float* b) {
+        __m128 S = _mm_load_ps(b);
+        _mm_store_ps(a, S);
+    }
+    inline const bool a_compare_vec4f(const float* a, const float* b) {
+        __m128 A = _mm_load_ps(a);
+        __m128 B = _mm_load_ps(b);
+
+        return _mm_movemask_ps(_mm_cmpeq_ps(A, B)) == 0xf;
+    }
     inline void a_complex_mul(float a, float b, float c, float d, float* dst) {
         // Loading values into the 128 bit register
         // __mm_set_ps accepts the parameters in reverse order
