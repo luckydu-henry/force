@@ -5,6 +5,7 @@
 #        include "simd/intel_sse.hpp"
 #    elif BOOST_HW_SIMD_X86 == BOOST_HW_SIMD_X86_SSE2_VERSION
 #        include "simd/intel_sse2.hpp"
+namespace force { namespace simd { using namespace sse; } }
 #    elif BOOST_HW_SIMD_X86 == BOOST_HW_SIMD_X86_SSE3_VERSION
 #        include "simd/intel_sse3.hpp"
 #    endif

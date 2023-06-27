@@ -11,17 +11,11 @@ std::ostream& operator<<(std::ostream& stream, const ::force::complex<Ty>& C) {
     return stream;
 }
 
-std::ostream& operator<<(std::ostream& stream, const ::force::vec2<float>& v) {
-    stream << '[' << v.x() << ", " << v.y() << ']';
-    return stream;
-}
 
-std::ostream& operator<<(std::ostream& stream, const ::force::vec3<float>& v) {
-    stream << '[' << v.x() << ", " << v.y() << ", " << v.z() << ']';
-    return stream;
-}
-
-std::ostream& operator<<(std::ostream& stream, const ::force::vec4<float>& v) {
-    stream << '[' << v.x() << ", " << v.y() << ", " << v.z() << ", " << v.w() << ']';
+template <::force::vector Vec>
+std::ostream& operator<<(std::ostream& stream, const Vec& v) {
+    stream << '[';
+    for (std::size_t i = 0; i < Vec::dimension - 1; ++i) stream << v[i] << ", ";
+    stream << v[Vec::dimension - 1] << ']';
     return stream;
 }

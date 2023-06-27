@@ -15,8 +15,13 @@ namespace force {
     class alignas(16) complex {}; // Not support for other types.
 
     template <>
-    class alignas(16) complex<float> {
-        float m_val[4];
+    class complex<float> {
+        union {
+            alignas(16) float m_val[4];
+#if defined FORCE_USE_SIMD_COMPLEX
+            alignas(16) simd::vec128<float>::type m_vdata;
+#endif
+        };
     public:
 
         constexpr explicit complex()                  { m_val[0] = 0.f; m_val[1] = 0.f; }
@@ -36,11 +41,11 @@ namespace force {
         constexpr complex& operator-=(float z)  { m_val[0] -= z; return *this;}
         // simd activate
 #if defined FORCE_USE_SIMD_COMPLEX
-        complex& operator+=(const complex& z) { simd::a_vec4f_add_sub<simd::c_add>(m_val, z.m_val, m_val); return *this; }
-        complex& operator-=(const complex& z) { simd::a_vec4f_add_sub<simd::c_sub>(m_val, z.m_val, m_val); return *this; }
-        complex& operator*=(float k) { simd::a_vec4f_mul_div_s<simd::c_mul>(m_val, k, m_val); return *this; }
-        complex& operator/=(float k) { simd::a_vec4f_mul_div_s<simd::c_div>(m_val, k, m_val); return *this; }
-
+        complex& operator+=(const complex& z) { simd::a_vec128_add_sub<float, simd::c_add>(m_vdata, z.m_vdata, m_vdata); return *this; }
+        complex& operator-=(const complex& z) { simd::a_vec128_add_sub<float, simd::c_sub>(m_vdata, z.m_vdata, m_vdata); return *this; }
+        complex& operator*=(float k) { simd::a_vec128_mul_div_s<float, simd::c_mul>(m_vdata, k, m_vdata); return *this; }
+        complex& operator/=(float k) { simd::a_vec128_mul_div_s<float, simd::c_div>(m_vdata, k, m_vdata); return *this; }
+        // Waiting for better optimize.
         complex& operator*=(const complex& z) { simd::a_complex_mul(m_val[0], m_val[1], z.m_val[0], z.m_val[1], m_val); return *this; }
         complex& operator/=(const complex& z) { simd::a_complex_div(m_val[0], m_val[1], z.m_val[0], z.m_val[1], m_val); return *this; }
 #else
@@ -201,4 +206,6 @@ namespace force {
             return complex<float>(0.0f, static_cast<float>(x));
         }
     }
+
+    using complexf = complex<float>;
 }
