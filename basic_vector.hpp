@@ -3,11 +3,9 @@
 #include <cstring> // for memory operation.
 #include "simd.hpp"
 namespace force {
-    // For crtp inheritage.
     // base class of vector.
     // Do not use this base class directly use its sub classes for safe simd support and better syntax.
     template <typename Ty>
-        requires std::is_arithmetic_v<Ty>
     class basic_vec128 { // 128 bit (16 byte) aligned vector
     protected:
         static constexpr unsigned int m_size() {
@@ -23,12 +21,12 @@ namespace force {
 #endif
         };
     public:
-        template <typename Ty>
-        friend const Ty dot(const basic_vec128<Ty>&, const basic_vec128<Ty>&);
-        template <typename Ty>
-        friend const Ty modulus(const basic_vec128<Ty>&);
-        template <typename Ty>
-        friend const bool operator==(const basic_vec128<Ty>&, const basic_vec128<Ty>&);
+        template <typename ArgTy>
+        friend const ArgTy dot(const basic_vec128<ArgTy>&, const basic_vec128<ArgTy>&);
+        template <typename ArgTy>
+        friend const ArgTy modulus(const basic_vec128<ArgTy>&);
+        template <typename ArgTy>
+        friend const bool operator==(const basic_vec128<ArgTy>&, const basic_vec128<ArgTy>&);
 
         using value_type = Ty;
         static constexpr unsigned int memsize = 16;
@@ -36,7 +34,7 @@ namespace force {
         constexpr basic_vec128() :m_data()                           { std::memset(m_data, 0, memsize); }
         constexpr basic_vec128(const basic_vec128& right) : m_data() { std::memcpy(m_data, right.m_data, memsize); }
         constexpr basic_vec128(basic_vec128&& right) : m_data()      { std::memcpy(m_data, right.m_data, memsize); }
-#if defined FORCE_USE_SIMD_VECTOR
+#if defined FORCE_USE_SIMD_VECTOR && ((BOOST_HW_SIMD_X86 >= BOOST_HW_SIMD_X86_SSE_VERSION))
         basic_vec128& operator= (const basic_vec128& right) { simd::a_init_vec128<Ty>(m_data, right.m_data);  return *this; }
         basic_vec128& operator+=(const basic_vec128& right) { simd::a_vec128_add_sub<Ty, simd::c_add>(m_vdata, right.m_vdata, m_vdata); return *this; }
         basic_vec128& operator-=(const basic_vec128& right) { simd::a_vec128_add_sub<Ty, simd::c_sub>(m_vdata, right.m_vdata, m_vdata); return *this; }
@@ -70,8 +68,9 @@ namespace force {
     [[nodiscard]] constexpr basic_vec128<Ty> operator/(const basic_vec128<Ty>& a, Ty k) {
         basic_vec128<Ty> tmp(a); tmp /= k; return tmp;
     }
-
-#if defined FORCE_USE_SIMD_VECTOR
+// If your platform is intel, then you must atleast supports SSE for basic basic_vec128<float>
+// Optimization. Intel SSE provides __m128 which is float[4] simd.
+#if defined FORCE_USE_SIMD_VECTOR && ((BOOST_HW_SIMD_X86 >= BOOST_HW_SIMD_X86_SSE_VERSION))
     template <typename Ty>
     inline const Ty dot(const basic_vec128<Ty>& v1, const basic_vec128<Ty>& v2) {
         return simd::a_dot_product_vec128<Ty>(v1.m_vdata, v2.m_vdata);

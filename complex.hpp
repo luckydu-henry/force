@@ -1,5 +1,6 @@
 #pragma once
 #include <concepts>
+#include <limits>
 #include "prmthfn.hpp"
 #include "simd.hpp"
 
@@ -12,7 +13,7 @@ namespace force {
     // Complex type.
     ////////////////
     template <std::floating_point Float>
-    class alignas(16) complex {}; // Not support for other types.
+    class alignas(16) complex {using value_type = Float;}; // Not support for other types.
 
     template <>
     class complex<float> {
@@ -23,7 +24,7 @@ namespace force {
 #endif
         };
     public:
-
+        using value_type = float;
         constexpr explicit complex()                  { m_val[0] = 0.f; m_val[1] = 0.f; }
         constexpr explicit complex(float r)           { m_val[0] = r;   m_val[1] = 0.f; }
         constexpr explicit complex(float r, float i)  { m_val[0] = r;   m_val[1] = i; }
@@ -39,8 +40,9 @@ namespace force {
         constexpr complex& operator=(const complex& z) { m_val[0] = z.m_val[0]; m_val[1] = z.m_val[1]; return *this;}
         constexpr complex& operator+=(float z)  { m_val[0] += z; return *this;}
         constexpr complex& operator-=(float z)  { m_val[0] -= z; return *this;}
-        // simd activate
-#if defined FORCE_USE_SIMD_COMPLEX
+// simd activate
+// complexf's simd requires atleast SSE for simd support.
+#if defined FORCE_USE_SIMD_COMPLEX && ((BOOST_HW_SIMD_X86 >= BOOST_HW_SIMD_X86_SSE_VERSION))
         complex& operator+=(const complex& z) { simd::a_vec128_add_sub<float, simd::c_add>(m_vdata, z.m_vdata, m_vdata); return *this; }
         complex& operator-=(const complex& z) { simd::a_vec128_add_sub<float, simd::c_sub>(m_vdata, z.m_vdata, m_vdata); return *this; }
         complex& operator*=(float k) { simd::a_vec128_mul_div_s<float, simd::c_mul>(m_vdata, k, m_vdata); return *this; }
@@ -161,11 +163,11 @@ namespace force {
     }
     template <typename Ty>
         [[nodiscard]] constexpr bool operator==(const complex<Ty>& a, const complex<Ty>& b) {
-        return ::force::abs(a.real() - b.real()) < FLT_EPSILON && ::force::abs(a.imag() - b.imag()) < FLT_EPSILON;
+        return ::force::abs(a.real() - b.real()) < std::numeric_limits<float>::epsilon() && ::force::abs(a.imag() - b.imag()) < std::numeric_limits<float>::epsilon();
     }
     template <typename Ty>
         [[nodiscard]] constexpr bool operator==(const complex<Ty>& a, const Ty& b) {
-        return ::force::abs(a.real() - b) < FLT_EPSILON && ::force::abs(a.imag()) < FLT_EPSILON;
+        return ::force::abs(a.real() - b) < std::numeric_limits<float>::epsilon() && ::force::abs(a.imag()) < std::numeric_limits<float>::epsilon();
     }
 
     //////////////////////////////////
@@ -194,7 +196,7 @@ namespace force {
         return Comp{ ::force::inv(z.real), ::force::inv(z.imag) };
     }
     template <complex_number Comp>
-    typename Comp::value_type abs(const Comp& z) {
+    Comp::value_type abs(const Comp& z) {
         return ::force::sqrt(z.real * z.real + z.imag * z.imag);
     }
 
