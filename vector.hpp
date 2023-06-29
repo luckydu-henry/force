@@ -9,9 +9,9 @@ namespace force {
     class vector2<float> : public basic_vec128<float> {
     public:
         static constexpr unsigned int dimension = 2;
-        explicit vector2()                                 :basic_vec128<float>() {}
-        explicit vector2(const basic_vec128<float>& right) :basic_vec128<float>(right) {}
-        explicit vector2(basic_vec128<float>&& right)      :basic_vec128<float>(right) {}
+        vector2()                                 :basic_vec128<float>() {}
+        vector2(const basic_vec128<float>& right) :basic_vec128<float>(right) {}
+        vector2(basic_vec128<float>&& right)      :basic_vec128<float>(right) {}
         vector2(float x, float y)                          :basic_vec128<float>() { 
             m_data[0] = x; m_data[1] = y; m_data[2] = m_data[3] = 0; 
         }
@@ -27,9 +27,9 @@ namespace force {
     class vector3<float> : public basic_vec128<float> {
     public:
         static constexpr unsigned int dimension = 3;
-        explicit vector3() :basic_vec128<float>() {}
-        explicit vector3(const basic_vec128<float>& right) :basic_vec128<float>(right) {}
-        explicit vector3(basic_vec128<float>&& right)      :basic_vec128<float>(right) {}
+        vector3() :basic_vec128<float>() {}
+        vector3(const basic_vec128<float>& right) :basic_vec128<float>(right) {}
+        vector3(basic_vec128<float>&& right)      :basic_vec128<float>(right) {}
         vector3(float x, float y, float z)                 :basic_vec128<float>() {
             m_data[0] = x; m_data[1] = y; m_data[2] = z; m_data[3] = 0;
         }
@@ -45,9 +45,9 @@ namespace force {
     class vector4<float> : public basic_vec128<float> {
     public:
         static constexpr unsigned int dimension = 4;
-        explicit vector4() :basic_vec128<float>() {}
-        explicit vector4(const basic_vec128<float>& right) :basic_vec128<float>(right) {}
-        explicit vector4(basic_vec128<float>&& right)      :basic_vec128<float>(right) {}
+        vector4() :basic_vec128<float>() {}
+        vector4(const basic_vec128<float>& right) :basic_vec128<float>(right) {}
+        vector4(basic_vec128<float>&& right)      :basic_vec128<float>(right) {}
         vector4(float x, float y, float z, float w)        :basic_vec128<float>() {
             m_data[0] = x; m_data[1] = y; m_data[2] = z; m_data[3] = w;
         }
@@ -59,6 +59,7 @@ namespace force {
     template <>
     class vector2<double> : public basic_vec128<double> {
     public:
+        static constexpr unsigned int dimension = 2;
         vector2()                                  :basic_vec128<double>() {}
         vector2(const basic_vec128<double>& right) :basic_vec128<double>(right) {}
         vector2(basic_vec128<double>&& right)      :basic_vec128<double>(right) {}
@@ -87,6 +88,13 @@ namespace force {
     template <typename Ty>
     concept vector = vector_traits<Ty>::value;
 
+    namespace vector_literials {
+        constexpr unsigned int _x = 0;
+        constexpr unsigned int _y = 1;
+        constexpr unsigned int _z = 2;
+        constexpr unsigned int _w = 3;
+    }
+
 #if !defined FORCE_USE_SIMD_VECTOR
     // Define functions for vectors.
     template <vector Vec>
@@ -107,4 +115,13 @@ namespace force {
     }
 // #else // This will avalible when simd supports.
 #endif
+    // Cross product for only vector3, however, it can be used in any basic_vec128
+    inline const vec3 cross(const vec3& v1, const vec3& v2) {
+        using namespace vector_literials;
+        vec3 v{};
+        v[_x] = v1[_y] * v2[_z] - v1[_z] * v2[_y]; 
+        v[_y] = v1[_z] * v2[_x] - v1[_x] * v2[_z];
+        v[_z] = v1[_x] * v2[_y] - v1[_y] * v2[_x];
+        return v;
+    }
 }

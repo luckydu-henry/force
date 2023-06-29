@@ -20,6 +20,7 @@ namespace force {
             alignas(16) simd::vec128<Ty>::type m_vdata;
 #endif
         };
+        // Constructor for converting arrays to a vector.
     public:
         template <typename ArgTy>
         friend const ArgTy dot(const basic_vec128<ArgTy>&, const basic_vec128<ArgTy>&);
@@ -30,10 +31,12 @@ namespace force {
 
         using value_type = Ty;
         static constexpr unsigned int memsize = 16;
+        static constexpr Ty zero[4] = { 0,0,0,1 };
 
         constexpr basic_vec128() :m_data()                           { std::memset(m_data, 0, memsize); }
         constexpr basic_vec128(const basic_vec128& right) : m_data() { std::memcpy(m_data, right.m_data, memsize); }
-        constexpr basic_vec128(basic_vec128&& right) : m_data()      { std::memcpy(m_data, right.m_data, memsize); }
+        constexpr basic_vec128(basic_vec128&& right) :m_data()       { std::memcpy(m_data, right.m_data, memsize); }
+        constexpr basic_vec128(const Ty* v)          :m_data()       { std::memcpy(m_data, v, memsize); }
 #if defined FORCE_USE_SIMD_VECTOR && ((BOOST_HW_SIMD_X86 >= BOOST_HW_SIMD_X86_SSE_VERSION))
         basic_vec128& operator= (const basic_vec128& right) { simd::a_init_vec128<Ty>(m_data, right.m_data);  return *this; }
         basic_vec128& operator+=(const basic_vec128& right) { simd::a_vec128_add_sub<Ty, simd::c_add>(m_vdata, right.m_vdata, m_vdata); return *this; }
