@@ -72,6 +72,22 @@ namespace force {
     [[nodiscard]] constexpr Float sec   (Float x);
     template <std::floating_point Float>
     [[nodiscard]] constexpr Float csc   (Float x);
+
+    //////////////////////////////
+    // Arc-Trignometric functions
+    //////////////////////////////
+    template <std::floating_point Float>
+    [[nodiscard]] constexpr Float asin(Float x);
+    template <std::floating_point Float>
+    [[nodiscard]] constexpr Float acos(Float x);
+    template <std::floating_point Float>
+    [[nodiscard]] constexpr Float atan(Float x);
+    template <std::floating_point Float>
+    [[nodiscard]] constexpr Float acot(Float x);
+    template <std::floating_point Float>
+    [[nodiscard]] constexpr Float asec(Float x);
+    template <std::floating_point Float>
+    [[nodiscard]] constexpr Float acsc(Float x);
 }
 // Floating point 32-bit.
 namespace force {

@@ -68,16 +68,12 @@ namespace force {
             *this = tmp;
             return *this;
         }
-        // basic_vec128 here can only use int or float.
-        basic_vec128<Ty> operator*(const basic_vec128<Ty>& right) {
-            auto* data = right.data();
-            Ty d[4] = {
-                data[0] * m_data[0][0] + data[1] * m_data[0][1] + data[2] * m_data[0][2] + data[3] * m_data[0][3],
-                data[0] * m_data[1][0] + data[1] * m_data[1][1] + data[2] * m_data[1][2] + data[3] * m_data[1][3],
-                data[0] * m_data[2][0] + data[1] * m_data[2][1] + data[2] * m_data[2][2] + data[3] * m_data[2][3],
-                data[0] * m_data[3][0] + data[1] * m_data[3][1] + data[2] * m_data[3][2] + data[3] * m_data[3][3]
-            };
-            return basic_vec128<Ty>(d);
+        basic_mat32x4x4 transpose() {
+            basic_mat32x4x4 tmp;
+            for (std::size_t i = 0; i < 4; ++i)
+                for (std::size_t j = 0; j < 4; ++j)
+                    tmp.m_data[i][j] = m_data[j][i];
+            return tmp;
         }
 #endif
 
@@ -104,5 +100,29 @@ namespace force {
     template <typename Ty>
     [[nodiscard]] constexpr basic_mat32x4x4<Ty> operator*(const basic_mat32x4x4<Ty>& a, const basic_mat32x4x4<Ty>& b) {
         basic_mat32x4x4<Ty> tmp(a); tmp *= b; return tmp;
+    }
+    template <typename Ty>
+    [[nodiscard]] constexpr basic_vec128<Ty> operator*(const basic_mat32x4x4<Ty> a, const basic_vec128<Ty>& b) {
+        auto* vdata = b.data();
+        auto* mdata = a.data();
+        Ty d[4] = {
+            vdata[0] * mdata[0* 4 + 0] + vdata[1] * mdata[0 * 4 + 1] + vdata[2] * mdata[0 * 4 + 2] + vdata[3] * mdata[0* 4 + 3],
+            vdata[0] * mdata[1* 4 + 0] + vdata[1] * mdata[1 * 4 + 1] + vdata[2] * mdata[1 * 4 + 2] + vdata[3] * mdata[1* 4 + 3],
+            vdata[0] * mdata[2* 4 + 0] + vdata[1] * mdata[2 * 4 + 1] + vdata[2] * mdata[2 * 4 + 2] + vdata[3] * mdata[2* 4 + 3],
+            vdata[0] * mdata[3* 4 + 0] + vdata[1] * mdata[3 * 4 + 1] + vdata[2] * mdata[3 * 4 + 2] + vdata[3] * mdata[3* 4 + 3]
+        };
+        return basic_vec128<Ty>(d);
+    }
+    template <typename Ty>
+    [[nodiscard]] constexpr basic_vec128<Ty> operator*(const basic_vec128<Ty>& a, const basic_mat32x4x4<Ty>& b) {
+        auto* vdata = a.data();
+        auto* mdata = b.data();
+        Ty d[4] = {
+            vdata[0] * mdata[0 * 4 + 0] + vdata[1] * mdata[1 * 4 + 0] + vdata[2] * mdata[2 * 4 + 0] + vdata[3] * mdata[3 * 4 + 0],
+            vdata[0] * mdata[0 * 4 + 1] + vdata[1] * mdata[1 * 4 + 1] + vdata[2] * mdata[2 * 4 + 1] + vdata[3] * mdata[3 * 4 + 1],
+            vdata[0] * mdata[0 * 4 + 2] + vdata[1] * mdata[1 * 4 + 2] + vdata[2] * mdata[2 * 4 + 2] + vdata[3] * mdata[3 * 4 + 2],
+            vdata[0] * mdata[0 * 4 + 3] + vdata[1] * mdata[1 * 4 + 3] + vdata[2] * mdata[2 * 4 + 3] + vdata[3] * mdata[3 * 4 + 3]
+        };
+        return basic_vec128<Ty>(d);
     }
 }

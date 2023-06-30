@@ -10,8 +10,8 @@ namespace force {
     public:
         static constexpr unsigned int dimension = 2;
         vector2()                                 :basic_vec128<float>() {}
-        vector2(const basic_vec128<float>& right) :basic_vec128<float>(right) {}
-        vector2(basic_vec128<float>&& right)      :basic_vec128<float>(right) {}
+        vector2(const basic_vec128<float>& right) :basic_vec128<float>(right) {m_data[2] = m_data[3] = 0;}
+        vector2(basic_vec128<float>&& right)      :basic_vec128<float>(right) {m_data[2] = m_data[3] = 0;}
         vector2(float x, float y)                          :basic_vec128<float>() { 
             m_data[0] = x; m_data[1] = y; m_data[2] = m_data[3] = 0; 
         }
@@ -28,8 +28,8 @@ namespace force {
     public:
         static constexpr unsigned int dimension = 3;
         vector3() :basic_vec128<float>() {}
-        vector3(const basic_vec128<float>& right) :basic_vec128<float>(right) {}
-        vector3(basic_vec128<float>&& right)      :basic_vec128<float>(right) {}
+        vector3(const basic_vec128<float>& right) :basic_vec128<float>(right) { m_data[3] = 0;}
+        vector3(basic_vec128<float>&& right)      :basic_vec128<float>(right) { m_data[3] = 0; }
         vector3(float x, float y, float z)                 :basic_vec128<float>() {
             m_data[0] = x; m_data[1] = y; m_data[2] = z; m_data[3] = 0;
         }
@@ -110,6 +110,14 @@ namespace force {
         return static_cast<Vec::value_type>(::force::sqrt(sum));
     }
     template <vector Vec>
+    Vec normallize(const Vec& v) {
+        auto sum = static_cast<Vec::value_type>(0);
+        for (std::size_t i = 0; i < Vec::dimension; ++i) sum += v[i] * v[i];
+        Vec r = v;
+        r *= ::force::rsqrt(sum);
+        return r;
+    }
+    template <vector Vec>
     const bool operator==(const Vec& v1, const Vec& v2) {
         return std::memcmp(v1.data(), v2.data(), Vec::memsize) == 0;
     }
@@ -124,4 +132,8 @@ namespace force {
         v[_z] = v1[_x] * v2[_y] - v1[_y] * v2[_x];
         return v;
     }
+    template <vector Vec>
+    inline void homolize(Vec& v) { v /= v[Vec::dimension - 1]; }
+    template <vector Vec>
+    inline void veclize(Vec& v)  { v[Vec::dimension - 1] = 1; }
 }

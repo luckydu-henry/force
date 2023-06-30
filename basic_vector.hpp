@@ -27,6 +27,8 @@ namespace force {
         template <typename ArgTy>
         friend const ArgTy modulus(const basic_vec128<ArgTy>&);
         template <typename ArgTy>
+        friend const basic_vec128<ArgTy> normallize(const basic_vec128<ArgTy>&);
+        template <typename ArgTy>
         friend const bool operator==(const basic_vec128<ArgTy>&, const basic_vec128<ArgTy>&);
 
         using value_type = Ty;
@@ -43,6 +45,11 @@ namespace force {
         basic_vec128& operator-=(const basic_vec128& right) { simd::a_vec128_add_sub<Ty, simd::c_sub>(m_vdata, right.m_vdata, m_vdata); return *this; }
         basic_vec128& operator*=(value_type k) { simd::a_vec128_mul_div_s<Ty, simd::c_mul>(m_vdata, k, m_vdata); return *this; }
         basic_vec128& operator/=(value_type k) { simd::a_vec128_mul_div_s<Ty, simd::c_div>(m_vdata, k, m_vdata); return *this; }
+        basic_vec128& operator-() {
+            auto v = simd::vec128<Ty>::set1_p(static_cast<Ty>(0));
+            simd::a_vec128_add_sub<Ty, simd::c_sub>(v, m_vdata, m_vdata);
+            return *this;
+        }
 #else
         // When you turn on release mode, compiler will optimized all loops.
         basic_vec128& operator= (const basic_vec128& right) { std::memcpy(m_data, right.m_data, memsize); return *this; }
@@ -50,6 +57,7 @@ namespace force {
         basic_vec128& operator-=(const basic_vec128& right) { for (std::size_t i = 0; i < basic_vec128::m_size(); ++i) m_data[i] -= right.m_data[i]; return *this; }
         basic_vec128& operator*=(value_type k) { for (std::size_t i = 0; i < basic_vec128::m_size(); ++i) m_data[i] *= k; return *this; }
         basic_vec128& operator/=(value_type k) { for (std::size_t i = 0; i < basic_vec128::m_size(); ++i) m_data[i] /= k; return *this; }
+        basic_vec128& operator-() { for (std::size_t i = 0; i < basic_vec128::m_size(); ++i) m_data[i] = -m_data[i]; return *this; }
 #endif  
         const Ty* data() const { return m_data; }
 
@@ -81,6 +89,12 @@ namespace force {
     template <typename Ty>
     inline const Ty modulus(const basic_vec128<Ty>& v) {
         return ::force::sqrt(simd::a_dot_product_vec128<Ty>(v.m_vdata, v.m_vdata));
+    }
+    template <typename Ty>
+    inline const basic_vec128<Ty> normallize(const basic_vec128<Ty>& v) {
+        basic_vec128<Ty> tmp = v;
+        tmp *= ::force::rsqrt(simd::a_dot_product_vec128<Ty>(v.m_vdata, v.m_vdata));
+        return tmp;
     }
     template <typename Ty>
     inline const bool operator==(const basic_vec128<Ty>& v1, const basic_vec128<Ty>& v2) {
