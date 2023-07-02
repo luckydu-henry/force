@@ -70,13 +70,6 @@ namespace force {
             *this = tmp;
             return *this;
         }
-        basic_mat32x4x4 transpose() {
-            basic_mat32x4x4 tmp;
-            for (std::size_t i = 0; i < 4; ++i)
-                for (std::size_t j = 0; j < 4; ++j)
-                    tmp.m_data[i][j] = m_data[j][i];
-            return tmp;
-        }
 #endif
 
         const Ty* data() const { return &m_data[0][0]; }
@@ -126,5 +119,14 @@ namespace force {
             vdata[0] * mdata[0 * 4 + 3] + vdata[1] * mdata[1 * 4 + 3] + vdata[2] * mdata[2 * 4 + 3] + vdata[3] * mdata[3 * 4 + 3]
         };
         return basic_vec128<Ty>(d);
+    }
+    template <typename Ty>
+    [[nodiscard]] constexpr float* transpose(const basic_mat32x4x4<Ty>& m) {
+        const float* d = m.data();
+        float a[4][4] = {};
+        for (std::size_t i = 0; i < 4; ++i)
+            for (std::size_t j = 0; j < 4; ++j)
+                a[i][j] = d[j * 4 + i];
+        return &(a[0][0]);
     }
 }
