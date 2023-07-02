@@ -21,6 +21,8 @@ namespace force {
     public:
         using value_type = Ty;
         static constexpr unsigned int memsize = 64;
+        static const Ty* init(std::initializer_list<Ty> lst) { return lst.begin(); }
+
 
         constexpr basic_mat32x4x4() :m_data()                              { std::memset(m_data, 0, memsize); }
         constexpr basic_mat32x4x4(const basic_mat32x4x4& right) : m_data() { std::memcpy(m_data, (right.m_data), memsize); }

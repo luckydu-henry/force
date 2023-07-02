@@ -67,19 +67,20 @@ namespace force::matrices {
     /////////////////////////////////////////////////
 
     // Gaze matrix is same as glm's lookAt.
-    // Parameter 1 is e(eye) position and P2 is g(gaze) direction and third is u(up) direction.
-    inline mat4x4 gaze(vec3 e, vec3 g, vec3 u) {
-        auto T = translate((vec3)(-e));
-        vec3 ng  = -g;
-        vec3 gxu = cross(g, u);
-
-        mat4x4 M{};
-        std::memcpy(M[0], gxu.data(), 4);
-        std::memcpy(M[1], u.data(),   4);
-        std::memcpy(M[2], ng.data(),  4);
-        M[3][3] = 1;
-
-        return mat4x4(M * T);
+    // Parameter 1 is e(eye) position and P2 is look at vector and third is u(up) direction.
+    // This gaze will set front to -z and up to y and x to right. (OpenGL default)
+    inline mat4x4 gaze(const vec3& e, const vec3& a, const vec3& up) {
+        vec3 N = normallize(a - e);
+        vec3 U = normallize(cross(N, up));
+        vec3 V = cross(U, N);
+        mat4x4 M = mat4x4::identity;
+        std::memcpy(M[0], U.data(), 3);
+        std::memcpy(M[1], V.data(), 3);
+        std::memcpy(M[2], (-N).data(), 3);
+        M[0][3] = -dot(U, e);
+        M[1][3] = -dot(V, e);
+        M[2][3] =  dot(N, e);
+        return M;
     }
     // Orthographic matrix.
     // info should be a float[6], the elem should be:
