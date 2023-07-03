@@ -9,76 +9,47 @@
 #endif 
 
 namespace force {
-    ////////////////
-    // Complex type.
-    ////////////////
-    template <std::floating_point Float>
-    class alignas(16) complex {using value_type = Float;}; // Not support for other types.
+
+    template <std::floating_point Real>
+    class complex;
 
     template <>
     class complex<float> {
-        union {
-            alignas(16) float m_val[4];
-#if defined FORCE_USE_SIMD_COMPLEX
-            alignas(16) simd::vec128<float>::type m_vdata;
-#endif
-        };
     public:
         using value_type = float;
-        constexpr explicit complex()                  { m_val[0] = 0.f; m_val[1] = 0.f; }
-        constexpr explicit complex(float r)           { m_val[0] = r;   m_val[1] = 0.f; }
-        constexpr explicit complex(float r, float i)  { m_val[0] = r;   m_val[1] = i; }
+        union {
+            // This part is use to align data and use simd.
+            float _VAL[2]; // Don't touch this outside in any purpose.
+            // Two varibles to store the data
+            struct { float real, imag; };
+        };
 
-        complex(const complex& z)  {  m_val[0] = z.m_val[0]; m_val[1] = z.m_val[1]; }
+        constexpr complex(float a)          : real(a) ,imag(0.f){}
+        constexpr complex(float a, float b) : real(a), imag(b)  {}
+        complex(const complex& right) { std::memcpy(_VAL, right._VAL, 2 * sizeof(float)); }
+        complex(complex&& right)      { std::memcpy(_VAL, right._VAL, 2 * sizeof(float)); }
 
-        constexpr const float real() const  { return m_val[0]; }
-        constexpr const float imag() const  { return m_val[1]; }
-        constexpr void        real(float r) { m_val[0] = r; }
-        constexpr void        imag(float i) { m_val[1] = i; }
-
-        constexpr complex& operator=(float z)   { m_val[0] = z; m_val[1] = 0; return *this;}
-        constexpr complex& operator=(const complex& z) { m_val[0] = z.m_val[0]; m_val[1] = z.m_val[1]; return *this;}
-        constexpr complex& operator+=(float z)  { m_val[0] += z; return *this;}
-        constexpr complex& operator-=(float z)  { m_val[0] -= z; return *this;}
-// simd activate
-// complexf's simd requires atleast SSE for simd support.
-#if defined FORCE_USE_SIMD_COMPLEX && ((BOOST_HW_SIMD_X86 >= BOOST_HW_SIMD_X86_SSE_VERSION))
-        complex& operator+=(const complex& z) { simd::a_vec128_add_sub<float, simd::c_add>(m_vdata, z.m_vdata, m_vdata); return *this; }
-        complex& operator-=(const complex& z) { simd::a_vec128_add_sub<float, simd::c_sub>(m_vdata, z.m_vdata, m_vdata); return *this; }
-        complex& operator*=(float k) { simd::a_vec128_mul_div_s<float, simd::c_mul>(m_vdata, k, m_vdata); return *this; }
-        complex& operator/=(float k) { simd::a_vec128_mul_div_s<float, simd::c_div>(m_vdata, k, m_vdata); return *this; }
-        // Waiting for better optimize.
-        complex& operator*=(const complex& z) { simd::a_complex_mul(m_val[0], m_val[1], z.m_val[0], z.m_val[1], m_val); return *this; }
-        complex& operator/=(const complex& z) { simd::a_complex_div(m_val[0], m_val[1], z.m_val[0], z.m_val[1], m_val); return *this; }
-#else
-        constexpr complex& operator*=(const float& z) { m_val[0] = m_val[0] * z; m_val[1] = m_val[1] * z; return *this; }
-        constexpr complex& operator/=(const float& z) { m_val[0] = m_val[0] / z; m_val[1] = m_val[1] / z; return *this; }
-        constexpr complex& operator+=(const complex& z) {
-            m_val[0] = m_val[0] + z.m_val[0];
-            m_val[1] = m_val[1] + z.m_val[1];
-            return *this;
-        }
-        constexpr complex& operator-=(const complex& z) {
-            m_val[0] = m_val[0] - z.m_val[0];
-            m_val[1] = m_val[1] - z.m_val[1];
-            return *this;
-        }
-        constexpr complex& operator*=(const complex& z) {
-            float tr = m_val[0] * z.m_val[0] - m_val[1] * z.m_val[1];
-            float ti = m_val[0] * z.m_val[1] + m_val[1] * z.m_val[0];
-            m_val[0] = tr;
-            m_val[1] = ti;
+        complex& operator= (const complex& right) { std::memcpy(_VAL, right._VAL, 2 * sizeof(float)); return *this; }
+        // All loops will be optimized when turn on release mode.
+        complex& operator+=(const complex& right) { for (int i = 0; i < 2; ++i) _VAL[i] += right._VAL[i]; return *this; }
+        complex& operator-=(const complex& right) { for (int i = 0; i < 2; ++i) _VAL[i] -= right._VAL[i]; return *this; }
+        complex& operator*=(float k)              { for (int i = 0; i < 2; ++i) _VAL[i] *= k;             return *this; }
+        complex& operator/=(float k)              { for (int i = 0; i < 2; ++i) _VAL[i] /= k;             return *this; }
+        complex& operator*=(const complex& z) {
+            float tr = real * z.real - imag * z.imag;
+            float ti = real * z.imag + imag * z.real;
+            real = tr; imag = ti;
             return *this;
         }
         constexpr complex& operator/=(const complex& z) {
-            float d = z.m_val[0] * z.m_val[0] + z.m_val[1] * z.m_val[1];
-            float tr = (m_val[0] * z.m_val[0] + m_val[1] * z.m_val[1]) / d;
-            float ti = (m_val[1] * z.m_val[0] - m_val[0] * z.m_val[1]) / d;
-            m_val[0] = tr;
-            m_val[1] = ti;
+            float d = z.real * z.real + z.imag * z.imag;
+            float tr = (real * z.real + imag * z.imag) / d;
+            float ti = (imag * z.real - real * z.imag) / d;
+            real = tr; imag = ti;
             return *this;
         }
-#endif  
+
+        ~complex() = default;
     };
 
     template <typename Ty>
@@ -159,15 +130,15 @@ namespace force {
     }
     template <typename Ty>
         [[nodiscard]] constexpr complex<Ty> operator-(const complex<Ty>& a) {
-        return complex<Ty>(-a.real(), -a.imag());
+        return complex<Ty>(-a.real, -a.imag);
     }
     template <typename Ty>
         [[nodiscard]] constexpr bool operator==(const complex<Ty>& a, const complex<Ty>& b) {
-        return ::force::abs(a.real() - b.real()) < std::numeric_limits<float>::epsilon() && ::force::abs(a.imag() - b.imag()) < std::numeric_limits<float>::epsilon();
+        return ::force::abs(a.real - b.real) < std::numeric_limits<float>::epsilon() && ::force::abs(a.imag - b.imag) < std::numeric_limits<float>::epsilon();
     }
     template <typename Ty>
         [[nodiscard]] constexpr bool operator==(const complex<Ty>& a, const Ty& b) {
-        return ::force::abs(a.real() - b) < std::numeric_limits<float>::epsilon() && ::force::abs(a.imag()) < std::numeric_limits<float>::epsilon();
+        return ::force::abs(a.real - b) < std::numeric_limits<float>::epsilon() && ::force::abs(a.imag) < std::numeric_limits<float>::epsilon();
     }
 
     //////////////////////////////////
