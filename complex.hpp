@@ -1,50 +1,84 @@
 #pragma once
-#include <concepts>
-#include <limits>
 #include "prmthfn.hpp"
-#include "simd.hpp"
-
-#if defined _WIN32
-#pragma warning(disable:4455)
-#endif 
-
+#include "vector_view.hpp"
 namespace force {
 
-    template <std::floating_point Real>
-    class complex;
-
-    template <>
-    class complex<float> {
+    template <std::floating_point Real, class VecViewT>
+    class complex {
     public:
-        using value_type = float;
+        using value_type = Real;
+        using view_type  = VecViewT;
         union {
             // This part is use to align data and use simd.
-            float _VAL[2]; // Don't touch this outside in any purpose.
+            value_type data[2]; // Don't touch this outside in any purpose.
             // Two varibles to store the data
-            struct { float real, imag; };
+            struct { value_type real, imag; };
         };
 
-        constexpr complex(float a)          : real(a) ,imag(0.f){}
-        constexpr complex(float a, float b) : real(a), imag(b)  {}
-        complex(const complex& right) { std::memcpy(_VAL, right._VAL, 2 * sizeof(float)); }
-        complex(complex&& right)      { std::memcpy(_VAL, right._VAL, 2 * sizeof(float)); }
+        constexpr complex(std::initializer_list<Real> lst) {
+            std::fill(data, data + 2, static_cast<Real>(0));
+            std::copy(lst.begin(), lst.end(), data);
+        }
+        constexpr complex(const view_type& v) {
+            std::fill(data, data + 2, static_cast<Real>(0));
+            std::copy(v.data(), v.data() + std::min(2, v.size()), data);
+        }
+        complex(const complex& right) { 
+            std::fill(data, data + 2, static_cast<Real>(0));
+            std::copy(right.data, right.data + 2, data);
+        }
+        complex(complex&& right)      {
+            std::fill(data, data + 2, static_cast<Real>(0));
+            std::move(right.data, right.data + 2, data);
+        }
+        complex& operator= (const complex& right) { 
+            std::copy(right.data, right.data + 2, data);
+            return *this; 
+        }
+        complex& operator= (complex&& right) {
+            std::move(right.data, right.data + 2, data);
+            return *this;
+        }
 
-        complex& operator= (const complex& right) { std::memcpy(_VAL, right._VAL, 2 * sizeof(float)); return *this; }
         // All loops will be optimized when turn on release mode.
-        complex& operator+=(const complex& right) { for (int i = 0; i < 2; ++i) _VAL[i] += right._VAL[i]; return *this; }
-        complex& operator-=(const complex& right) { for (int i = 0; i < 2; ++i) _VAL[i] -= right._VAL[i]; return *this; }
-        complex& operator*=(float k)              { for (int i = 0; i < 2; ++i) _VAL[i] *= k;             return *this; }
-        complex& operator/=(float k)              { for (int i = 0; i < 2; ++i) _VAL[i] /= k;             return *this; }
+        complex& operator+=(value_type k) {
+            real += k;
+            return *this;
+        }
+        complex& operator-=(value_type k) {
+            real -= k;
+            return *this;
+        }
+        complex& operator+=(const complex& right) {
+            #pragma omp simd
+            for (int i = 0; i < 2; ++i)  data[i] += right.data[i]; 
+            return *this;
+        }
+        complex& operator-=(const complex& right) { 
+            #pragma omp simd
+            for (int i = 0; i < 2; ++i) data[i] -= right.data[i]; 
+            return *this; 
+        }
+        complex& operator*=(value_type k) { 
+            #pragma omp simd
+            for (int i = 0; i < 2; ++i) data[i] *= k;             
+            return *this; 
+        }
+        complex& operator/=(value_type k) {
+            #pragma omp simd
+            for (int i = 0; i < 2; ++i) data[i] /= k;             
+            return *this; 
+        }
         complex& operator*=(const complex& z) {
-            float tr = real * z.real - imag * z.imag;
-            float ti = real * z.imag + imag * z.real;
+            value_type tr = real * z.real - imag * z.imag;
+            value_type ti = real * z.imag + imag * z.real;
             real = tr; imag = ti;
             return *this;
         }
-        constexpr complex& operator/=(const complex& z) {
-            float d = z.real * z.real + z.imag * z.imag;
-            float tr = (real * z.real + imag * z.imag) / d;
-            float ti = (imag * z.real - real * z.imag) / d;
+        complex& operator/=(const complex& z) {
+            value_type d = z.real * z.real + z.imag * z.imag;
+            value_type tr = (real * z.real + imag * z.imag) / d;
+            value_type ti = (imag * z.real - real * z.imag) / d;
             real = tr; imag = ti;
             return *this;
         }
@@ -52,92 +86,92 @@ namespace force {
         ~complex() = default;
     };
 
-    template <typename Ty>
-    [[nodiscard]] constexpr complex<Ty> operator+(const complex<Ty>& a, const complex<Ty>& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+    [[nodiscard]] constexpr complex<Ty, VecViewT> operator+(const complex<Ty, VecViewT>& a, const complex<Ty, VecViewT>& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp += b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator+(const complex<Ty>& a, const Ty& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator+(const complex<Ty, VecViewT>& a, const Ty& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp += b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator+(const Ty& a, const complex<Ty>& b) {
-        complex<Ty> tmp(b);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator+(const Ty& a, const complex<Ty, VecViewT>& b) {
+        complex<Ty, VecViewT> tmp(b);
         tmp += a;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator-(const complex<Ty>& a, const complex<Ty>& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator-(const complex<Ty, VecViewT>& a, const complex<Ty, VecViewT>& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp -= b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator-(const complex<Ty>& a, const Ty& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator-(const complex<Ty, VecViewT>& a, const Ty& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp -= b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator-(const Ty& a, const complex<Ty>& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator-(const Ty& a, const complex<Ty, VecViewT>& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp -= b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator*(const complex<Ty>& a, const complex<Ty>& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator*(const complex<Ty, VecViewT>& a, const complex<Ty, VecViewT>& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp *= b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator*(const complex<Ty>& a, const Ty& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator*(const complex<Ty, VecViewT>& a, const Ty& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp *= b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator*(const Ty& a, const complex<Ty>& b) {
-        complex<Ty> tmp(b);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator*(const Ty& a, const complex<Ty, VecViewT>& b) {
+        complex<Ty, VecViewT> tmp(b);
         tmp *= a;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator/(const complex<Ty>& a, const complex<Ty>& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator/(const complex<Ty, VecViewT>& a, const complex<Ty, VecViewT>& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp /= b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator/(const complex<Ty>& a, const Ty& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator/(const complex<Ty, VecViewT>& a, const Ty& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp /= b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator/(const Ty& a, const complex<Ty>& b) {
-        complex<Ty> tmp(a);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator/(const Ty& a, const complex<Ty, VecViewT>& b) {
+        complex<Ty, VecViewT> tmp(a);
         tmp /= b;
         return tmp;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator+(const complex<Ty>& a) {
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator+(const complex<Ty, VecViewT>& a) {
         return a;
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr complex<Ty> operator-(const complex<Ty>& a) {
-        return complex<Ty>(-a.real, -a.imag);
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr complex<Ty, VecViewT> operator-(const complex<Ty, VecViewT>& a) {
+        return complex<Ty, VecViewT>(-a.real, -a.imag);
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr bool operator==(const complex<Ty>& a, const complex<Ty>& b) {
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr bool operator==(const complex<Ty, VecViewT>& a, const complex<Ty, VecViewT>& b) {
         return ::force::abs(a.real - b.real) < std::numeric_limits<float>::epsilon() && ::force::abs(a.imag - b.imag) < std::numeric_limits<float>::epsilon();
     }
-    template <typename Ty>
-        [[nodiscard]] constexpr bool operator==(const complex<Ty>& a, const Ty& b) {
+    template <typename Ty, class VecViewT>
+        [[nodiscard]] constexpr bool operator==(const complex<Ty, VecViewT>& a, const Ty& b) {
         return ::force::abs(a.real - b) < std::numeric_limits<float>::epsilon() && ::force::abs(a.imag) < std::numeric_limits<float>::epsilon();
     }
 
@@ -147,9 +181,7 @@ namespace force {
     template <typename Ty>
     struct complex_traits : std::false_type {};
     template <>
-    struct complex_traits<complex<float>> : std::true_type {};
-    template <>
-    struct complex_traits<complex<double>> : std::true_type {};
+    struct complex_traits<complex<float, vec4f_view>> : std::true_type {};
 
     template <typename Ty>
     concept complex_number = complex_traits<Ty>::value;
@@ -172,13 +204,13 @@ namespace force {
     }
 
     namespace complex_literals {
-        constexpr complex<float>  operator""fi(long double x) {
-            return complex<float>(0.0f, static_cast<float>(x));
+        constexpr complex<float, vec4f_view>  operator""fi(long double x) {
+            return { 0.0f, static_cast<float>(x) };
         }
-        constexpr complex<float>  operator""fi(unsigned long long x) {
-            return complex<float>(0.0f, static_cast<float>(x));
+        constexpr complex<float, vec4f_view>  operator""fi(unsigned long long x) {
+            return { 0.0f, static_cast<float>(x) };
         }
     }
 
-    using complexf = complex<float>;
+    using complexf = complex<float, vec4f_view>;
 }

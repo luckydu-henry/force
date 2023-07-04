@@ -1,9 +1,6 @@
 #pragma once
 #include "basic_vector.hpp"
 namespace force {
-    // Two view types
-    using vec4f_view = typename basic_vector_view<float, 4>;
-    using vec4i_view = typename basic_vector_view<int, 4>;
     // Using for basic_vectors.
     // These usings can do conversions between.
     using vec4f = typename basic_vector<float, 4, vec4f_view>;

@@ -1,65 +1,7 @@
 #pragma once
 #include "prmthfn.hpp"
-#include <algorithm> // for copy fill and min
+#include "vector_view.hpp"
 namespace force {
-
-    // Vector view is used to do conversion between vectors.
-    // This class has now extra pay off because it's very light.
-    template <typename Ty, std::size_t MaxSize>
-    class basic_vector_view {
-        Ty          m_data[MaxSize];
-        std::size_t m_size;
-    public:
-        using value_type = Ty;
-        static constexpr std::size_t max_size = MaxSize;
-
-        constexpr basic_vector_view(const value_type* d, size_t s) {
-            m_size = s;
-            std::copy(d, d + m_size, m_data);
-        }
-        basic_vector_view(const basic_vector_view& right) {
-            std::copy(right.m_data, right.m_data + std::min(m_size, right.m_size), m_data);
-            m_size = right.m_size;
-        }
-        basic_vector_view(basic_vector_view&& right) noexcept {
-            std::move(right.m_data, right.m_data + std::min(m_size, right.m_size), m_data);
-            m_size = right.m_size;
-        }
-        // Append operator can use to cat two basic_vector_view.
-        // Vectors don't have division so this operator is fine.
-        basic_vector_view& operator/=(const value_type& v) {
-            if (m_size > max_size - 1) throw "Too large to combine a vector.";
-            m_data[m_size++] = v;
-            return *this;
-        }
-        basic_vector_view& operator/=(const basic_vector_view& v) {
-            if (m_size + v.m_size > max_size) throw "Too large to combine a vector.";
-            std::copy(v.data(), v.data() + v.m_size, m_data + m_size);
-            m_size += v.m_size;
-            return *this;
-        }
-
-        const size_t      size() const { return m_size; }
-        const value_type* data() const { return m_data; }
-
-        ~basic_vector_view() = default;
-    };
-
-    // Useful functions to do vector combined and vector clip.
-    template <typename Ty, std::size_t MaxSize>
-    [[nodiscard]] constexpr basic_vector_view<Ty, MaxSize> operator/(const basic_vector_view<Ty, MaxSize>& a, const Ty& b) {
-        basic_vector_view<Ty, MaxSize> v(a); v /= b; return v;
-    }
-    template <typename Ty, std::size_t MaxSize>
-    [[nodiscard]] constexpr basic_vector_view<Ty, MaxSize> operator/(const basic_vector_view<Ty, MaxSize>& a,
-                                                                     const basic_vector_view<Ty, MaxSize>& b) {
-        basic_vector_view<Ty, MaxSize>v(a); v /= b; return v;
-    }
-    template <typename Ty, std::size_t MaxSize>
-    [[nodiscard]] constexpr basic_vector_view<Ty, MaxSize> operator/(const Ty& a, const basic_vector_view<Ty, MaxSize>& b) {
-        basic_vector_view<Ty, MaxSize>v(&a, 1); v /= b; return v;
-    }
-
     // basic_vector class is the template for all vectors.
     // Ty is the element type and Dimension is the array size.
     // VecViewT is the middle viewer vector type.
@@ -134,13 +76,11 @@ namespace force {
         // Shuffle operator can give back a new vector using this vector to construct.
         // To use this just simply give ArgDim parameter(this is neccesarry) and give in initalizer_list
         // Which has the exact same size as ArgDim.
-        template <std::size_t ArgDim, typename RetVectorT = basic_vector<Ty, ArgDim, VecViewT>>
-        RetVectorT        clip(std::initializer_list<std::size_t> ids) {
-            RetVectorT rvec{};
-            if (ids.size() != ArgDim)
-                throw "Error: indexes is neq to parameters!";
-            for (std::size_t i = 0; i < ArgDim; ++i)
-                rvec[i] = m_data[*(ids.begin() + i)];
+        template <typename ... Indecies, std::size_t ArgDim = sizeof...(Indecies)>
+        basic_vector<Ty, ArgDim, VecViewT>        operator()(Indecies ... idx) {
+            basic_vector<Ty, ArgDim, VecViewT>  rvec{};
+            std::initializer_list<std::size_t>  ids = { (std::size_t)idx... };
+            for (std::size_t i = 0; i < ArgDim; ++i) rvec[i] = m_data[*(ids.begin() + i)];
             return rvec;
         }
         // Since there is no dynamic allocation
@@ -148,41 +88,46 @@ namespace force {
         ~basic_vector() = default;
     };
 
-    template <typename Ty, std::size_t Dimension, class VecViewT, typename Ret = basic_vector<Ty, Dimension, VecViewT>>
-    [[nodiscard]] constexpr Ret operator+(const Ret& a, const Ret& b) {
-        Ret tmp(a);
+    template <typename Ty, std::size_t Dimension, class VecViewT>
+    [[nodiscard]] constexpr basic_vector<Ty, Dimension, VecViewT> operator+(const basic_vector<Ty, Dimension, VecViewT>& a,
+                                                                            const basic_vector<Ty, Dimension, VecViewT>& b) {
+        basic_vector<Ty, Dimension, VecViewT> tmp(a);
         tmp += b;
         return tmp;
     }
-    template <typename Ty, std::size_t Dimension, class VecViewT, typename Ret = basic_vector<Ty, Dimension, VecViewT>>
-    [[nodiscard]] constexpr Ret operator-(const Ret& a, const Ret& b) {
-        Ret tmp(a);
+    template <typename Ty, std::size_t Dimension, class VecViewT>
+    [[nodiscard]] constexpr basic_vector<Ty, Dimension, VecViewT> operator-(const basic_vector<Ty, Dimension, VecViewT>& a,
+                                                                            const basic_vector<Ty, Dimension, VecViewT>& b) {
+        basic_vector<Ty, Dimension, VecViewT> tmp(a);
         tmp -= b;
         return tmp;
     }
-    template <typename Ty, std::size_t Dimension, class VecViewT, typename Ret = basic_vector<Ty, Dimension, VecViewT>>
-    [[nodiscard]] constexpr Ret operator*(const Ret& a, const Ret& b) {
-        Ret tmp(a);
+    template <typename Ty, std::size_t Dimension, class VecViewT>
+    [[nodiscard]] constexpr basic_vector<Ty, Dimension, VecViewT> operator*(const basic_vector<Ty, Dimension, VecViewT>& a,
+                                                                            const basic_vector<Ty, Dimension, VecViewT>& b) {
+        basic_vector<Ty, Dimension, VecViewT> tmp(a);
         tmp *= b;
         return tmp;
     }
-    template <typename Ty, std::size_t Dimension, class VecViewT, typename Ret = basic_vector<Ty, Dimension, VecViewT>>
-    [[nodiscard]] constexpr Ret operator+(const Ret& a) {
+    template <typename Ty, std::size_t Dimension, class VecViewT>
+    [[nodiscard]] constexpr basic_vector<Ty, Dimension, VecViewT> operator+(const basic_vector<Ty, Dimension, VecViewT>& a) {
         return a;
     }
-    template <typename Ty, std::size_t Dimension, class VecViewT, typename Ret = basic_vector<Ty, Dimension, VecViewT>>
-    [[nodiscard]] constexpr Ret operator-(const Ret& a) {
-        Ret v{ static_cast<Ty>(0) }; v -= a; return v;
+    template <typename Ty, std::size_t Dimension, class VecViewT>
+    [[nodiscard]] constexpr basic_vector<Ty, Dimension, VecViewT> operator-(const basic_vector<Ty, Dimension, VecViewT>& a) {
+        basic_vector<Ty, Dimension, VecViewT> v{ static_cast<Ty>(0) }; v -= a; return v;
     }
-
-    template <typename Ty, std::size_t Dimension, class VecViewT, typename Ret = basic_vector<Ty, Dimension, VecViewT>>
-    [[nodiscard]] constexpr bool operator==(const Ret& a, const Ret& b) {
+    ///////////////////////////////////
+    // Algorithms for basic_vectors. //
+    //////////////////////////////////
+    template <typename Ty, std::size_t Dimension, class VecViewT>
+    [[nodiscard]] constexpr bool operator==(const basic_vector<Ty, Dimension, VecViewT>& a,
+                                            const basic_vector<Ty, Dimension, VecViewT>& b) {
         bool state = true;
         for (int i = 0; i < Dimension; ++i)
             if (std::abs(a[i] - b[i]) > std::numeric_limits<Ty>::epsilon()) return false;
         return true;
     }
-
     // Two functions to do vector calculation.
     template <typename Ty, std::size_t Dimension, class VecViewT>
     const Ty dot(const basic_vector<Ty, Dimension, VecViewT>& a, const basic_vector<Ty, Dimension, VecViewT>& b) {

@@ -1,6 +1,15 @@
 #pragma once
 #include <ostream>
+#include "complex.hpp"
 #include "vector.hpp"
+
+template <typename Ty, class VecViewT>
+std::ostream& operator<<(std::ostream& stream, const ::force::complex<Ty, VecViewT>& z) {
+    std::cout << z.real;
+    stream.setf(std::ostream::showpos);
+    std::cout << z.imag << "i";
+    return stream;
+}
 
 template <typename Ty, std::size_t Dimension, class VecViewT>
 std::ostream& operator<<(std::ostream& stream, const ::force::basic_vector<Ty, Dimension, VecViewT>& vec) {
