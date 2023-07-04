@@ -5,9 +5,9 @@
 
 template <typename Ty, class VecViewT>
 std::ostream& operator<<(std::ostream& stream, const ::force::complex<Ty, VecViewT>& z) {
-    std::cout << z.real;
+    stream << z.real;
     stream.setf(std::ostream::showpos);
-    std::cout << z.imag << "i";
+    stream << z.imag << "i";
     return stream;
 }
 

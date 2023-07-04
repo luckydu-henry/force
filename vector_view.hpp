@@ -24,13 +24,13 @@ namespace force {
             m_size = right.m_size;
         }
         // Append operator can use to cat two basic_vector_view.
-        // Vectors don't have division so this operator is fine.
-        basic_vector_view& operator/=(const value_type& v) {
+        // Vectors don't have mod operations so this operator is fine. 
+        basic_vector_view& operator%(const value_type& v) {
             if (m_size > max_size - 1) throw "Too large to combine a vector.";
             m_data[m_size++] = v;
             return *this;
         }
-        basic_vector_view& operator/=(const basic_vector_view& v) {
+        basic_vector_view& operator%(const basic_vector_view& v) {
             if (m_size + v.m_size > max_size) throw "Too large to combine a vector.";
             std::copy(v.data(), v.data() + v.m_size, m_data + m_size);
             m_size += v.m_size;
@@ -45,16 +45,16 @@ namespace force {
 
     // Useful functions to do vector combined and vector clip.
     template <typename Ty, std::size_t MaxSize>
-    [[nodiscard]] constexpr basic_vector_view<Ty, MaxSize> operator/(const basic_vector_view<Ty, MaxSize>& a, const Ty& b) {
+    [[nodiscard]] constexpr basic_vector_view<Ty, MaxSize> operator%(const basic_vector_view<Ty, MaxSize>& a, const Ty& b) {
         basic_vector_view<Ty, MaxSize> v(a); v /= b; return v;
     }
     template <typename Ty, std::size_t MaxSize>
-    [[nodiscard]] constexpr basic_vector_view<Ty, MaxSize> operator/(const basic_vector_view<Ty, MaxSize>& a,
+    [[nodiscard]] constexpr basic_vector_view<Ty, MaxSize> operator%(const basic_vector_view<Ty, MaxSize>& a,
         const basic_vector_view<Ty, MaxSize>& b) {
         basic_vector_view<Ty, MaxSize>v(a); v /= b; return v;
     }
     template <typename Ty, std::size_t MaxSize>
-    [[nodiscard]] constexpr basic_vector_view<Ty, MaxSize> operator/(const Ty& a, const basic_vector_view<Ty, MaxSize>& b) {
+    [[nodiscard]] constexpr basic_vector_view<Ty, MaxSize> operator%(const Ty& a, const basic_vector_view<Ty, MaxSize>& b) {
         basic_vector_view<Ty, MaxSize>v(&a, 1); v /= b; return v;
     }
 

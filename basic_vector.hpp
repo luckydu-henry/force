@@ -13,6 +13,7 @@ namespace force {
     public:
         using value_type = Ty;
         using view_type  = VecViewT;
+
         static constexpr std::size_t dimension = Dimension;
 
         // Initializer_list can copy elements to data.
@@ -83,6 +84,7 @@ namespace force {
             for (std::size_t i = 0; i < ArgDim; ++i) rvec[i] = m_data[*(ids.begin() + i)];
             return rvec;
         }
+
         // Since there is no dynamic allocation
         // The deconstructor needs to do nothing.
         ~basic_vector() = default;
