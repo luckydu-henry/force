@@ -58,7 +58,8 @@ namespace force {
         basic_vector_view<Ty, MaxSize>v(&a, 1); v /= b; return v;
     }
 
-    // Two view types
-    using vec4f_view = typename basic_vector_view<float, 4>;
-    using vec4i_view = typename basic_vector_view<int, 4>;
+    // View types for common vectors.
+    using vec4f_view  = typename basic_vector_view<float, 4>;
+    using vec4i_view  = typename basic_vector_view<int, 4>;
+    using vec4u_view  = typename basic_vector_view<unsigned int, 4>;
 }

@@ -204,10 +204,10 @@ namespace force {
     }
 
     namespace complex_literals {
-        constexpr complex<float, vec4f_view>  operator""fi(long double x) {
+        constexpr complex<float, vec4f_view>  operator""if(long double x) {
             return { 0.0f, static_cast<float>(x) };
         }
-        constexpr complex<float, vec4f_view>  operator""fi(unsigned long long x) {
+        constexpr complex<float, vec4f_view>  operator""if(unsigned long long x) {
             return { 0.0f, static_cast<float>(x) };
         }
     }

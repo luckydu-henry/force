@@ -16,6 +16,9 @@ namespace force {
 
         static constexpr std::size_t dimension = Dimension;
 
+        constexpr basic_vector() {
+            std::fill(m_data, m_data + dimension, static_cast<value_type>(0));
+        }
         // Initializer_list can copy elements to data.
         // It's safe if you don't pass in any parameter or you list's len
         // is greater than vector's actual dimension.
@@ -138,11 +141,29 @@ namespace force {
         for (std::size_t i = 0; i < Dimension; ++i) s += (a[i] * b[i]);
         return s;
     }
+    // Length here is use to get the length(modulus) of a vector.
     template <typename Ty, std::size_t Dimension, class VecViewT>
-    const Ty modulus(const basic_vector<Ty, Dimension, VecViewT>& a) {
+    const Ty length(const basic_vector<Ty, Dimension, VecViewT>& a) {
         auto s = static_cast<Ty>(0);
         #pragma omp simd
         for (std::size_t i = 0; i < Dimension; ++i) s += (a[i] * a[i]);
         return ::force::sqrt(s);
+    }
+    template <typename Ty, std::size_t Dimension, class VecViewT>
+    basic_vector<Ty, Dimension, VecViewT> normalize(const basic_vector<Ty, Dimension, VecViewT>& a) {
+        auto esqd = static_cast<Ty>(0);
+        #pragma omp simd
+        for (std::size_t i = 0; i < Dimension; ++i) esqd += (a[i] * a[i]);
+        basic_vector<Ty, Dimension, VecViewT> k(a); k *= ::force::rsqrt(esqd);
+        return k;
+    }
+    // Cross product is only avalible for 3 dimensional vectors.
+    template <typename Ty, class VecViewT>
+    basic_vector<Ty, 3, VecViewT> cross(const basic_vector<Ty, 3, VecViewT>& a, const basic_vector<Ty, 3, VecViewT>& b) {
+        return {
+            a[1] * b[2] - b[1] * a[2],
+            a[2] * b[0] - b[2] * a[0],
+            a[0] * b[1] - b[0] * a[1]
+        };
     }
 }

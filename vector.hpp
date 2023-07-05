@@ -6,7 +6,11 @@ namespace force {
     using vec4f = typename basic_vector<float, 4, vec4f_view>;
     using vec3f = typename basic_vector<float, 3, vec4f_view>;
     using vec2f = typename basic_vector<float, 2, vec4f_view>;
+    using vec1f = typename basic_vector<float, 1, vec4f_view>;
     using vec4i = typename basic_vector<int, 4, vec4i_view>;
     using vec3i = typename basic_vector<int, 3, vec4i_view>;
     using vec2i = typename basic_vector<int, 2, vec4i_view>;
+    using vec1i = typename basic_vector<int, 1, vec4f_view>;
+
+
 }
