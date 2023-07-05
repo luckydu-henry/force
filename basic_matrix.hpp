@@ -5,18 +5,18 @@ namespace force {
 
     template <typename Ty,
               std::size_t Col, std::size_t Row, 
-              class VecViewT>
+              class VecPipeT>
     class basic_matrix {
         // Vector class stores actual data.
-        basic_vector<Ty, Row, VecViewT> m_data[Col];
+        basic_vector<Ty, Row, VecPipeT> m_data[Col];
 #define SBEG_PTR    (&(m_data[0][0]))
 #define SEND_PTR    (&(m_data[0][0]) + Col * Row)
 #define RBEG_PTR    (&(right.m_data[0][0]))
 #define REND_PTR    (&(right.m_data[0][0]) + Col * Row)
     public:
         using value_type = Ty;
-        using vec_type   = basic_vector<Ty, Row, VecViewT>;
-        using vview_type = VecViewT;
+        using vec_type   = basic_vector<Ty, Row, VecPipeT>;
+        using vpipe_type = VecPipeT;
 
         static constexpr std::size_t col = Col;
         static constexpr std::size_t row = Row;
@@ -27,14 +27,14 @@ namespace force {
             std::fill(SBEG_PTR, SEND_PTR, static_cast<value_type>(0));
             std::copy(lst.begin(), lst.end(), SBEG_PTR);
         }
-        // ArgViews are all basic_vector<Ty, Row, VecViewT>
+        // ArgPipes are all basic_vector<Ty, Row, VecPipeT>
         // Make sure all parameters are this type. I don't know
         // what will happen if you pass in other types.
         // And make sure your parameter count is less or equal than mat's column size.
         template <typename ... ArgVecs>
         constexpr basic_matrix(const ArgVecs& ... avs) {
             // List that stores all vectors.
-            std::initializer_list<basic_vector<Ty, Row, VecViewT>> init_lst = { (basic_vector<Ty, Row, VecViewT>)avs... };
+            std::initializer_list<basic_vector<Ty, Row, VecPipeT>> init_lst = { (basic_vector<Ty, Row, VecPipeT>)avs... };
             std::fill(SBEG_PTR, SEND_PTR, static_cast<value_type>(0));
             std::copy(init_lst.begin(), init_lst.end(), m_data);
         }
@@ -99,38 +99,38 @@ namespace force {
     }
     template <typename Ty,
         std::size_t Col, std::size_t Row,
-        class VecViewT>
-    [[nodiscard]] basic_matrix<Ty, Col, Row, VecViewT> operator+(const basic_matrix<Ty, Col, Row, VecViewT>& a,
-                                                                 const basic_matrix<Ty, Col, Row, VecViewT>& b) {
-        basic_matrix<Ty, Col, Row, VecViewT> M = a; M += b; return M;
+        class VecPipeT>
+    [[nodiscard]] basic_matrix<Ty, Col, Row, VecPipeT> operator+(const basic_matrix<Ty, Col, Row, VecPipeT>& a,
+                                                                 const basic_matrix<Ty, Col, Row, VecPipeT>& b) {
+        basic_matrix<Ty, Col, Row, VecPipeT> M = a; M += b; return M;
     }
     template <typename Ty,
         std::size_t Col, std::size_t Row,
-        class VecViewT>
-    [[nodiscard]] basic_matrix<Ty, Col, Row, VecViewT> operator-(const basic_matrix<Ty, Col, Row, VecViewT>& a,
-                                                                 const basic_matrix<Ty, Col, Row, VecViewT>& b) {
-        basic_matrix<Ty, Col, Row, VecViewT> M = a; M -= b; return M;
+        class VecPipeT>
+    [[nodiscard]] basic_matrix<Ty, Col, Row, VecPipeT> operator-(const basic_matrix<Ty, Col, Row, VecPipeT>& a,
+                                                                 const basic_matrix<Ty, Col, Row, VecPipeT>& b) {
+        basic_matrix<Ty, Col, Row, VecPipeT> M = a; M -= b; return M;
     }
     template <typename Ty,
         std::size_t Col, std::size_t Row,
-        class VecViewT>
-    [[nodiscard]] basic_matrix<Ty, Col, Row, VecViewT> operator*(const basic_matrix<Ty, Col, Row, VecViewT>& m, const Ty& v) {
-        basic_matrix<Ty, Col, Row, VecViewT> M = m; M *= v; return M;
+        class VecPipeT>
+    [[nodiscard]] basic_matrix<Ty, Col, Row, VecPipeT> operator*(const basic_matrix<Ty, Col, Row, VecPipeT>& m, const Ty& v) {
+        basic_matrix<Ty, Col, Row, VecPipeT> M = m; M *= v; return M;
     }
     template <typename Ty,
         std::size_t Col, std::size_t Row,
-        class VecViewT>
-    [[nodiscard]] basic_matrix<Ty, Col, Row, VecViewT> operator/(const basic_matrix<Ty, Col, Row, VecViewT>& m, const Ty& v) {
-        basic_matrix<Ty, Col, Row, VecViewT> M = m; M /= v; return M;
+        class VecPipeT>
+    [[nodiscard]] basic_matrix<Ty, Col, Row, VecPipeT> operator/(const basic_matrix<Ty, Col, Row, VecPipeT>& m, const Ty& v) {
+        basic_matrix<Ty, Col, Row, VecPipeT> M = m; M /= v; return M;
     }
      // Notice, if you want to do vector multiplication
      // Use 1xd matrix or dx1 matrix to do that. If I do additional operation to do that.
     template <typename Ty,
         std::size_t Col, std::size_t Row, std::size_t OutDim,
-        class VecViewT>
-    [[nodiscard]] basic_matrix<Ty, Col, OutDim, VecViewT> operator*(const basic_matrix<Ty, Col, Row, VecViewT>& a,
-                                                                    const basic_matrix<Ty, Row, OutDim, VecViewT>& b) {
-        basic_matrix<Ty, Col, OutDim, VecViewT> target{};
+        class VecPipeT>
+    [[nodiscard]] basic_matrix<Ty, Col, OutDim, VecPipeT> operator*(const basic_matrix<Ty, Col, Row, VecPipeT>& a,
+                                                                    const basic_matrix<Ty, Row, OutDim, VecPipeT>& b) {
+        basic_matrix<Ty, Col, OutDim, VecPipeT> target{};
         #pragma omp simd
         for (std::size_t i = 0; i < Col; ++i) {
             #pragma omp simd
@@ -148,10 +148,10 @@ namespace force {
     // This uses row vector by default. so makesure your vector's row size is equal to matrix's row size.
     template <typename Ty,
         std::size_t Col, std::size_t Row,
-        class VecViewT>
-    [[nodiscard]] basic_vector<Ty, Row, VecViewT> operator*(const basic_matrix<Ty, Col, Row, VecViewT>& m,
-                                                            const basic_vector<Ty, Row, VecViewT>& v) {
-        basic_vector<Ty, Row, VecViewT> target{};
+        class VecPipeT>
+    [[nodiscard]] basic_vector<Ty, Row, VecPipeT> operator*(const basic_matrix<Ty, Col, Row, VecPipeT>& m,
+                                                            const basic_vector<Ty, Row, VecPipeT>& v) {
+        basic_vector<Ty, Row, VecPipeT> target{};
         for (std::size_t i = 0; i < Col; ++i) {
             auto s = static_cast<Ty>(0);
             for (std::size_t j = 0; j < Row; ++j)
@@ -164,10 +164,10 @@ namespace force {
     // This uses column vector by default. so makesure your vector's column size is equal to matrix's column size.
     template <typename Ty,
         std::size_t Col, std::size_t Row,
-        class VecViewT>
-    [[nodiscard]] basic_vector<Ty, Col, VecViewT> operator*(const basic_vector<Ty, Col, VecViewT>& v,
-                                                            const basic_matrix<Ty, Col, Row, VecViewT>& m) {
-        basic_vector<Ty, Col, VecViewT> target{};
+        class VecPipeT>
+    [[nodiscard]] basic_vector<Ty, Col, VecPipeT> operator*(const basic_vector<Ty, Col, VecPipeT>& v,
+                                                            const basic_matrix<Ty, Col, Row, VecPipeT>& m) {
+        basic_vector<Ty, Col, VecPipeT> target{};
         for (std::size_t i = 0; i < Row; ++i) {
             auto s = static_cast<Ty>(0);
             for (std::size_t j = 0; j < Col; ++j)
@@ -178,9 +178,9 @@ namespace force {
     }
     template <typename Ty,
         std::size_t Col, std::size_t Row,
-        class VecViewT>
-    [[nodiscard]] basic_matrix<Ty, Row, Col, VecViewT> transpose(const basic_matrix<Ty, Col, Row, VecViewT>& m) {
-        basic_matrix<Ty, Row, Col, VecViewT> target{};
+        class VecPipeT>
+    [[nodiscard]] basic_matrix<Ty, Row, Col, VecPipeT> transpose(const basic_matrix<Ty, Col, Row, VecPipeT>& m) {
+        basic_matrix<Ty, Row, Col, VecPipeT> target{};
         for (std::size_t i = 0; i < Col; ++i)
             for (std::size_t j = 0; j < Row; ++j)
                 target[j][i] = m[i][j];

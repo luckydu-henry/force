@@ -43,7 +43,7 @@ namespace force::matrices {
         };
     }
     /////////////////////////////////////////////////
-    // Viewport transformation matrices.
+    // Pipeport transformation matrices.
     /////////////////////////////////////////////////
 
     // Gaze matrix is same as glm's lookAt.
