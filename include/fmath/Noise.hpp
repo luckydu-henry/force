@@ -1,7 +1,7 @@
 #pragma once
 #include <concepts>
-namespace force {
+namespace Fma {
 }
 
-namespace force {
+namespace Fma {
 }

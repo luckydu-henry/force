@@ -1,6 +1,6 @@
 #pragma once
 #include <concepts>
-namespace force {
+namespace Fma {
     template <std::floating_point Float>
     constexpr Float pi     = static_cast<Float>(3.1415926535897932384626433832795);
     template <std::floating_point Float>
