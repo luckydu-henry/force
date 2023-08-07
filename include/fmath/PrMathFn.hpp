@@ -2,53 +2,53 @@
 #include "Constant.hpp"
 
 namespace Fma {
-    constexpr float Fmod(float x, float y);
+    [[nodiscard]] float Fmod(float x, float y);
     ///////////////////////
     // Rounding function
     ///////////////////////
-    [[nodiscard]] constexpr int   Ftrunc  (float x);
-    [[nodiscard]] constexpr int   Fceil   (float x);
-    [[nodiscard]] constexpr int   Ffloor  (float x);
-    [[nodiscard]] constexpr int   Fround  (float x);
-    [[nodiscard]] constexpr int   Fbround (float x); // banker round
+    [[nodiscard]] int   Ftrunc  (float x);
+    [[nodiscard]] int   Fceil   (float x);
+    [[nodiscard]] int   Ffloor  (float x);
+    [[nodiscard]] int   Fround  (float x);
+    [[nodiscard]] int   Fbround (float x); // banker round
     ////////////////////////
     // Arithmetic functions
     ////////////////////////
-    [[nodiscard]] constexpr float Fabs    (float x);
-    [[nodiscard]] constexpr int   Fabs    (int x);
-    [[nodiscard]] constexpr float Frecp   (float x);
-    [[nodiscard]] constexpr float Finv    (float x);
-    [[nodiscard]] constexpr float Fsqrt   (float x);
-    [[nodiscard]] constexpr float Frsqrt  (float x);
-    [[nodiscard]] constexpr float Fcbrt   (float x);
+    [[nodiscard]] float Fabs    (float x);
+    [[nodiscard]] int   Fabs    (int x);
+    [[nodiscard]] float Frecp   (float x);
+    [[nodiscard]] float Finv    (float x);
+    [[nodiscard]] float Fsqrt   (float x);
+    [[nodiscard]] float Frsqrt  (float x);
+    [[nodiscard]] float Fcbrt   (float x);
     ////////////////////////
     // Exp & log functions
     ////////////////////////
-    [[nodiscard]] constexpr float      Flog    (float x);
-    [[nodiscard]] constexpr float      Flog2   (float x);
-    [[nodiscard]] constexpr uint32_t   Flog2   (uint32_t x);
-    [[nodiscard]] constexpr float      Flog10  (float x);
-    [[nodiscard]] constexpr float      Fexp    (float x);
-    [[nodiscard]] constexpr float      Fexp2   (float x);
-    [[nodiscard]] constexpr float      Fexp10  (float x);
-    [[nodiscard]] constexpr float      Floga   (float a, float b);
-    [[nodiscard]] constexpr float      Fpow    (float x, float n);
+    [[nodiscard]] float      Flog    (float x);
+    [[nodiscard]] float      Flog2   (float x);
+    [[nodiscard]] uint32_t   Flog2   (uint32_t x);
+    [[nodiscard]] float      Flog10  (float x);
+    [[nodiscard]] float      Fexp    (float x);
+    [[nodiscard]] float      Fexp2   (float x);
+    [[nodiscard]] float      Fexp10  (float x);
+    [[nodiscard]] float      Floga   (float a, float b);
+    [[nodiscard]] float      Fpow    (float x, float n);
     //////////////////////////
     // Trignometric functions
     //////////////////////////
-    [[nodiscard]] constexpr float Fsin   (float x);
-    [[nodiscard]] constexpr float Fcos   (float x);
-    [[nodiscard]] constexpr float Ftan   (float x);
-    [[nodiscard]] constexpr float Fcot   (float x);
-    [[nodiscard]] constexpr float Fsec   (float x);
-    [[nodiscard]] constexpr float Fcsc   (float x);
+    [[nodiscard]] float Fsin   (float x);
+    [[nodiscard]] float Fcos   (float x);
+    [[nodiscard]] float Ftan   (float x);
+    [[nodiscard]] float Fcot   (float x);
+    [[nodiscard]] float Fsec   (float x);
+    [[nodiscard]] float Fcsc   (float x);
     //////////////////////////////
     // Arc-Trignometric functions
     //////////////////////////////
-    [[nodiscard]] constexpr float Fasin(float x);
-    [[nodiscard]] constexpr float Facos(float x);
-    [[nodiscard]] constexpr float Fatan(float x);
-    [[nodiscard]] constexpr float Facot(float x);
-    [[nodiscard]] constexpr float Fasec(float x);
-    [[nodiscard]] constexpr float Facsc(float x);
+    [[nodiscard]] float Fasin(float x);
+    [[nodiscard]] float Facos(float x);
+    [[nodiscard]] float Fatan(float x);
+    [[nodiscard]] float Facot(float x);
+    [[nodiscard]] float Fasec(float x);
+    [[nodiscard]] float Facsc(float x);
 }

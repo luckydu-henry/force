@@ -6,46 +6,49 @@
 using std::bit_cast;
 
 namespace Fma {
-    constexpr float Fmod(float x, float y) {
+    float Fmod(float x, float y) {
         float f = x / y;
         int   q = (int)f;
         float r = (f - q) * y;
         return r;
     }
-    constexpr int Ftrunc(float x) {
+    int Ftrunc(float x) {
         return static_cast<int>(x);
     }
-    constexpr int Fceil(float x) {
+    int Fceil(float x) {
         return static_cast<int>(x + 0.5f);
     }
-    constexpr int Ffloor(float x) {
+    int Ffloor(float x) {
         return static_cast<int>(x - 0.5f);
     }
-    constexpr int Fround(float x) {
+    int Fround(float x) {
         int   i = bit_cast<int>(x);
         float s = bit_cast<float>((i & 0x8000'0000) | 0x3f80'0000);
         return static_cast<int>(x + s * 0.5f);
     }
-    constexpr int Fbround(float x) {
+    int Fbround(float x) {
         int   k = ((int)x) & 1;
         int   i = bit_cast<int>(x);
         float s = bit_cast<float>((i & 0x8000'0000) | 0x3f80'0000);
         return static_cast<int>(x + s * ((float)k - 0.5f));
     }
-    constexpr float Fabs(float x) {
+    float Fabs(float x) {
         int i = bit_cast<int>(x);
         i = i & 0x7fff'ffff;
         return  bit_cast<float>(i);
     }
-    constexpr float Frecp(float x) {
+    int Fabs(int x) {
+        return ((x >> 31) ^ x) - (x >> 31);
+    }
+    float Frecp(float x) {
         return 1.f / x;
     }
-    constexpr float Finv(float x) {
+    float Finv(float x) {
         int i = bit_cast<int>(x);
         i = i ^ 0x8000'0000;
         return  bit_cast<float>(i);
     }
-    constexpr float Fsqrt(float x) {
+    float Fsqrt(float x) {
         float n = 0.5f * x;
         // Bit approxiMation
         int   i = bit_cast<int>(x);
@@ -57,7 +60,7 @@ namespace Fma {
 
         return y;
     }
-    constexpr float Frsqrt(float x) {
+    float Frsqrt(float x) {
         float n = 0.5f * x;
 
         int   i = bit_cast<int>(x);
@@ -69,7 +72,7 @@ namespace Fma {
 
         return y;
     }
-    constexpr float Fcbrt(float x) {
+    float Fcbrt(float x) {
 
         int   h = bit_cast<int>(x);
         float s = bit_cast<float>((h & 0x8000'0000) | 0x3f80'0000);
@@ -87,8 +90,8 @@ namespace Fma {
 
         return s * y;
     }
-    constexpr float Flog(float x) {
-        constexpr float ln2 = 0.693'1471'8055'9945'3094'1723f;
+    float Flog(float x) {
+        float ln2 = 0.693'1471'8055'9945'3094'1723f;
         // Evil floating point bit hacking.
         int   i = bit_cast<int>(x);
         int   e = (i >> 23) - 0x7f;
@@ -102,19 +105,19 @@ namespace Fma {
 
         return ln2 * (float)e + y;
     }
-    constexpr float Flog2(float x) {
-        constexpr float rln2 = 1.4'4269'5021'6293'3349'6093f;
+    float Flog2(float x) {
+        float rln2 = 1.4'4269'5021'6293'3349'6093f;
         return rln2 * Flog(x);
     }
-    constexpr uint32_t Flog2(uint32_t x) {
+    uint32_t Flog2(uint32_t x) {
         return 31u - std::countl_zero(x);
     }
-    constexpr float Flog10(float x) {
-        constexpr float rln10 = 0.4'3429'4481'9032'5182'7651f;
+    float Flog10(float x) {
+        float rln10 = 0.4'3429'4481'9032'5182'7651f;
         return rln10 * Flog(x);
     }
-    constexpr float Fexp(float x) {
-        constexpr float ln2 = 0.6'9314'7182'4645'9960'9375f; // actual ieee754 value of ln2.
+    float Fexp(float x) {
+        float ln2 = 0.6'9314'7182'4645'9960'9375f; // actual ieee754 value of ln2.
         // Split exponent to interger part and floating point part.
         // Since x = i + f
         // 2^(x) = 2^(i + f) = 2^i * 2^f.
@@ -130,26 +133,26 @@ namespace Fma {
         float y = 1.f + b * (1.f + b * (0.5f + b * (0.166666f + b * (0.0416666f + b * (0.0083333f + b * 0.0013888f)))));
         return bit_cast<float>(a) * y;
     }
-    constexpr float Fexp2(float x) {
-        constexpr float ln2 = 0.6'9314'7182'4645'9960'9375f;
+    float Fexp2(float x) {
+        float ln2 = 0.6'9314'7182'4645'9960'9375f;
         return Fexp(x * ln2);
     }
-    constexpr float Fexp10(float x) {
-        constexpr float ln10 = 2.3'0258'5124'9694'8242'1875f;
+    float Fexp10(float x) {
+        float ln10 = 2.3'0258'5124'9694'8242'1875f;
         return Fexp(x * ln10);
     }
     // Log in any base.
-    constexpr float Floga(float a, float b) {
+    float Floga(float a, float b) {
         float lnb = Flog(b);
         float lna = Flog(a);
         return lnb / lna;
     }
     // Real exponent power function.
-    constexpr float Fpow(float a, float b) {
+    float Fpow(float a, float b) {
         float lna = Flog(a);
         return Fexp(b * lna);
     }
-    constexpr float Fsin(float x) {
+    float Fsin(float x) {
 
         int   i = bit_cast<int>(x);
         int   g = (i & 0x8000'0000) | 0x3f80'0000;
@@ -175,7 +178,7 @@ namespace Fma {
         // Fix sign accoeding to original sign.
         return s * y;
     }
-    constexpr float Fcos(float x) {
+    float Fcos(float x) {
         int   i = bit_cast<int>(x);
         float a = bit_cast<float>(i & 0x7fff'ffff); // Absolute.
         float f = x / pi<float>;
@@ -195,7 +198,7 @@ namespace Fma {
 
         return y;
     }
-    constexpr float Ftan(float x) {
+    float Ftan(float x) {
         int   i = bit_cast<int>(x);
         int   g = (i & 0x8000'0000) | 0x3f80'0000;
         float s = bit_cast<float>(g);
@@ -214,16 +217,16 @@ namespace Fma {
 
         return s * y;
     }
-    constexpr float Fcot(float x) {
+    float Fcot(float x) {
         return 1.f / Ftan(x);
     }
-    constexpr float Fsec(float x) {
+    float Fsec(float x) {
         return 1.f / Fcos(x);
     }
-    constexpr float Fcsc(float x) {
+    float Fcsc(float x) {
         return 1.f / Fsin(x);
     }
-    constexpr float Fasin(float x) {
+    float Fasin(float x) {
 
         uint32_t ix = std::bit_cast<uint32_t>(x);
         float sn = std::bit_cast<float>(ix & 0x8000'0000 | 0x3f80'0000);
@@ -256,7 +259,7 @@ namespace Fma {
 
         return sn * (y);
     }
-    constexpr float Facos(float x) {
+    float Facos(float x) {
         // Simply use this conversion.
         return Fma::halfpi<float> -Fasin(x);
     }

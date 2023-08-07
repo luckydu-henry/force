@@ -4,6 +4,6 @@
 
 int main(int argc, char* argv[]) {
 
-    std::cout << Fma::Fsin(1.f) << std::endl;
+    std::cout << Fma::Fasin(1.f) << std::endl;
 
 }
