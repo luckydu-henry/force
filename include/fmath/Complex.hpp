@@ -9,34 +9,34 @@ namespace Fma {
         using value_type = Real;
         using pipe_type  = VecPipeT;
         union {
-            // This part is use to align data and use simd.
-            value_type data[2]; // Don't touch this outside in any purpose.
-            // Two varibles to store the data
+            // This part is use to align Data and use simd.
+            value_type Data[2]; // Don't touch this outside in any purpose.
+            // Two varibles to store the Data
             struct { value_type real, imag; };
         };
 
         constexpr Complex(std::initializer_list<Real> lst) {
-            std::fill(data, data + 2, static_cast<Real>(0));
-            std::copy(lst.begin(), lst.end(), data);
+            std::fill(Data, Data + 2, static_cast<Real>(0));
+            std::copy(lst.begin(), lst.end(), Data);
         }
         constexpr Complex(const pipe_type& v) {
-            std::fill(data, data + 2, static_cast<Real>(0));
-            std::copy(v.data(), v.data() + std::min(2, v.size()), data);
+            std::fill(Data, Data + 2, static_cast<Real>(0));
+            std::copy(v.Data(), v.Data() + std::min(2, v.size()), Data);
         }
         Complex(const Complex& right) { 
-            std::fill(data, data + 2, static_cast<Real>(0));
-            std::copy(right.data, right.data + 2, data);
+            std::fill(Data, Data + 2, static_cast<Real>(0));
+            std::copy(right.Data, right.Data + 2, Data);
         }
         Complex(Complex&& right)      {
-            std::fill(data, data + 2, static_cast<Real>(0));
-            std::move(right.data, right.data + 2, data);
+            std::fill(Data, Data + 2, static_cast<Real>(0));
+            std::move(right.Data, right.Data + 2, Data);
         }
         Complex& operator= (const Complex& right) { 
-            std::copy(right.data, right.data + 2, data);
+            std::copy(right.Data, right.Data + 2, Data);
             return *this; 
         }
         Complex& operator= (Complex&& right) {
-            std::move(right.data, right.data + 2, data);
+            std::move(right.Data, right.Data + 2, Data);
             return *this;
         }
 
@@ -51,22 +51,22 @@ namespace Fma {
         }
         Complex& operator+=(const Complex& right) {
             #pragma omp simd
-            for (int i = 0; i < 2; ++i)  data[i] += right.data[i]; 
+            for (int i = 0; i < 2; ++i)  Data[i] += right.Data[i]; 
             return *this;
         }
         Complex& operator-=(const Complex& right) { 
             #pragma omp simd
-            for (int i = 0; i < 2; ++i) data[i] -= right.data[i]; 
+            for (int i = 0; i < 2; ++i) Data[i] -= right.Data[i]; 
             return *this; 
         }
         Complex& operator*=(value_type k) { 
             #pragma omp simd
-            for (int i = 0; i < 2; ++i) data[i] *= k;             
+            for (int i = 0; i < 2; ++i) Data[i] *= k;             
             return *this; 
         }
         Complex& operator/=(value_type k) {
             #pragma omp simd
-            for (int i = 0; i < 2; ++i) data[i] /= k;             
+            for (int i = 0; i < 2; ++i) Data[i] /= k;             
             return *this; 
         }
         Complex& operator*=(const Complex& z) {
@@ -168,11 +168,11 @@ namespace Fma {
     }
     template <typename Ty, class VecPipeT>
         [[nodiscard]] constexpr bool operator==(const Complex<Ty, VecPipeT>& a, const Complex<Ty, VecPipeT>& b) {
-        return ::Fma::abs(a.real - b.real) < std::numeric_limits<float>::epsilon() && ::Fma::abs(a.imag - b.imag) < std::numeric_limits<float>::epsilon();
+        return ::Fma::Fabs(a.real - b.real) < std::numeric_limits<float>::epsilon() && ::Fma::Fabs(a.imag - b.imag) < std::numeric_limits<float>::epsilon();
     }
     template <typename Ty, class VecPipeT>
         [[nodiscard]] constexpr bool operator==(const Complex<Ty, VecPipeT>& a, const Ty& b) {
-        return ::Fma::abs(a.real - b) < std::numeric_limits<float>::epsilon() && ::Fma::abs(a.imag) < std::numeric_limits<float>::epsilon();
+        return ::Fma::Fabs(a.real - b) < std::numeric_limits<float>::epsilon() && ::Fma::Fabs(a.imag) < std::numeric_limits<float>::epsilon();
     }
 
     //////////////////////////////////
@@ -191,19 +191,19 @@ namespace Fma {
     /////////////////////
 
     template <Complex_number Comp>
-    Comp conjucate(const Comp& z) {
+    Comp Fconjucate(const Comp& z) {
         return Comp{ z.real, ::Fma::Finv(z.imag) };
     }
     template <Complex_number Comp>
-    Comp inv(const Comp& z) {
+    Comp Finv(const Comp& z) {
         return Comp{ ::Fma::Finv(z.real), ::Fma::Finv(z.imag) };
     }
     template <Complex_number Comp>
-    Comp::value_type abs(const Comp& z) {
-        return ::Fma::sqrt(z.real * z.real + z.imag * z.imag);
+    Comp::value_type Fabs(const Comp& z) {
+        return ::Fma::Fsqrt(z.real * z.real + z.imag * z.imag);
     }
 
-    namespace Complex_literals {
+    namespace ComplexLiterals {
         constexpr Complex<float, Vec4fPipe>  operator""if(long double x) {
             return { 0.0f, static_cast<float>(x) };
         }

@@ -25,20 +25,20 @@ namespace Fma {
         }
         // Append operator can use to cat two BasicVectorPipe.
         // Vectors don't have mod operations so this operator is fine. 
-        BasicVectorPipe& operator|(const value_type& v) {
+        BasicVectorPipe& operator|=(const value_type& v) {
             if (mSize > max_size - 1) throw "Too large to combine a Vector.";
             mData[mSize++] = v;
             return *this;
         }
-        BasicVectorPipe& operator|(const BasicVectorPipe& v) {
+        BasicVectorPipe& operator|=(const BasicVectorPipe& v) {
             if (mSize + v.mSize > max_size) throw "Too large to combine a Vector.";
-            std::copy(v.data(), v.data() + v.mSize, mData + mSize);
+            std::copy(v.Data(), v.Data() + v.mSize, mData + mSize);
             mSize += v.mSize;
             return *this;
         }
 
-        const size_t      size() const { return mSize; }
-        const value_type* data() const { return mData; }
+        const size_t      Size() const { return mSize; }
+        const value_type* Data() const { return mData; }
 
         ~BasicVectorPipe() = default;
     };
@@ -46,16 +46,16 @@ namespace Fma {
     // Useful functions to do Vector combined and Vector clip.
     template <typename Ty, std::size_t MaxSize>
     [[nodiscard]] constexpr BasicVectorPipe<Ty, MaxSize> operator|(const BasicVectorPipe<Ty, MaxSize>& a, const Ty& b) {
-        BasicVectorPipe<Ty, MaxSize> v(a); v /= b; return v;
+        BasicVectorPipe<Ty, MaxSize> v(a); v |= b; return v;
     }
     template <typename Ty, std::size_t MaxSize>
     [[nodiscard]] constexpr BasicVectorPipe<Ty, MaxSize> operator|(const BasicVectorPipe<Ty, MaxSize>& a,
         const BasicVectorPipe<Ty, MaxSize>& b) {
-        BasicVectorPipe<Ty, MaxSize>v(a); v /= b; return v;
+        BasicVectorPipe<Ty, MaxSize>v(a); v |= b; return v;
     }
     template <typename Ty, std::size_t MaxSize>
     [[nodiscard]] constexpr BasicVectorPipe<Ty, MaxSize> operator|(const Ty& a, const BasicVectorPipe<Ty, MaxSize>& b) {
-        BasicVectorPipe<Ty, MaxSize>v(&a, 1); v /= b; return v;
+        BasicVectorPipe<Ty, MaxSize>v(&a, 1); v |= b; return v;
     }
 
     // pipe types for common Vectors.

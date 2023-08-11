@@ -6,7 +6,7 @@ namespace Fma {
               std::size_t Col, std::size_t Row, 
               class VecPipeT>
     class BasicMatrix {
-        // Vector class stores actual data.
+        // Vector class stores actual Data.
         BasicVector<Ty, Row, VecPipeT> mData[Col];
 #define SBEG_PTR    (&(mData[0][0]))
 #define SEND_PTR    (&(mData[0][0]) + Col * Row)
@@ -74,10 +74,10 @@ namespace Fma {
             for (std::size_t i = 0; i < col; ++i) mData[i] /= k;
             return *this;
         }
-
-        const Vec_type& operator[](std::size_t i) const  { return mData[i]; }
-        Vec_type&       operator[](std::size_t i)        { return mData[i]; }
-        const value_type* data()                         { return &mData[0][0]; }
+        
+        Vec_type&       operator[](size_t i)       { return mData[i]; }
+        const Vec_type& operator[](size_t i) const { return mData[i]; }
+        const value_type* Data()                         { return &mData[0][0]; }
 
         ~BasicMatrix() = default;
 
@@ -89,7 +89,7 @@ namespace Fma {
 #undef REND_PTR
 
     template <class MatrixType>
-    MatrixType identity() {
+    MatrixType IdMat() {
         MatrixType target{};
         for (std::size_t i = 0; i < MatrixType::col; ++i)
             for (std::size_t j = 0; j < MatrixType::row; ++j)
@@ -178,7 +178,7 @@ namespace Fma {
     template <typename Ty,
         std::size_t Col, std::size_t Row,
         class VecPipeT>
-    [[nodiscard]] BasicMatrix<Ty, Row, Col, VecPipeT> transpose(const BasicMatrix<Ty, Col, Row, VecPipeT>& m) {
+    [[nodiscard]] BasicMatrix<Ty, Row, Col, VecPipeT> Transpose(const BasicMatrix<Ty, Col, Row, VecPipeT>& m) {
         BasicMatrix<Ty, Row, Col, VecPipeT> target{};
         for (std::size_t i = 0; i < Col; ++i)
             for (std::size_t j = 0; j < Row; ++j)
