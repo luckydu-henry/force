@@ -46,16 +46,15 @@ namespace Fma {
     }
     template <typename Ty>
     inline Ty Intrin_dot(const SIMDType<Ty>& a, const SIMDType<Ty>& b) {
+        static_assert(std::is_same_v<Ty, float>,"Interger vector does not support dot product!");
+
         if constexpr (std::is_same_v<Ty, float>) {
             auto c = _mm_mul_ps(a, b);
             auto shuf = _mm_shuffle_ps(c, c, 0xb1);
             auto sums = _mm_add_ps(c, shuf);
-            shuf      = _mm_movehl_ps(shuf, sums);
-            sums      = _mm_add_ps(sums, shuf);
+            shuf = _mm_movehl_ps(shuf, sums);
+            sums = _mm_add_ps(sums, shuf);
             return _mm_cvtss_f32(sums);
-        }
-        else if constexpr (std::is_same_v<Ty, int>) {
-            return 0;
         }
     }
 
@@ -136,18 +135,25 @@ namespace Fma {
         return a;
     }
     template <typename Ty> const SIMDVector4<Ty> operator-(const SIMDVector4<Ty>& a) {
-        return Intrin_sub<Ty>(Intrin_set1<Ty>(0), Intrin_load<Ty>(a.Data()));
+        return Intrin_sub<Ty>(Intrin_set1<Ty>(0), a.IntrinData());
     }
     template <typename Ty> const Ty              Dot(const SIMDVector4<Ty>& a, const SIMDVector4<Ty>& b) {
-        return Intrin_dot<Ty>(Intrin_load<Ty>(a.Data()), Intrin_load<Ty>(b.Data()));
+        return Intrin_dot<Ty>(a.IntrinData(), b.IntrinData());
     }
     template <typename Ty> const Ty              Length(const SIMDVector4<Ty>& a) {
-        auto k = Intrin_dot<Ty>(Intrin_load<Ty>(a.Data()), Intrin_load<Ty>(a.Data()));
+        auto k = Intrin_dot<Ty>(a.IntrinData(), a.IntrinData());
         return Fsqrt(k);
     }
     template <typename Ty> const SIMDVector4<Ty> Norm(const SIMDVector4<Ty>& a) {
-        auto k = Intrin_dot<Ty>(Intrin_load<Ty>(a.Data()), Intrin_load<Ty>(a.Data()));
+        auto k = Intrin_dot<Ty>(a.IntrinData(), a.IntrinData());
         k = Frsqrt(k);
-        return Intrin_mul<Ty>(Intrin_load<Ty>(a.Data()), Intrin_set1<Ty>(k));
+        return Intrin_mul<Ty>(a.IntrinData(), Intrin_set1<Ty>(k));
+    }
+    template <typename Ty>
+    const bool operator==(const SIMDVector4<Ty>& a, const SIMDVector4<Ty>& b) {
+        if constexpr (std::is_same_v<Ty, int>)
+            return _mm_movemask_epi8(_mm_cmpeq_epi32(a.IntrinData(), b.IntrinData())) == 0xffff;
+        else if constexpr (std::is_same_v<Ty, float>)
+            return _mm_movemask_ps(_mm_cmpeq_ps(a.IntrinData(), b.IntrinData())) == 0xf;
     }
 }
