@@ -51,4 +51,12 @@ namespace Fma {
     [[nodiscard]] float Facot(float x);
     [[nodiscard]] float Fasec(float x);
     [[nodiscard]] float Facsc(float x);
+
+    // Radian and angle conversion function
+    template <typename Ty> Ty Fradian(Ty deg) {
+        return deg * (static_cast<Ty>(180) / pi<Ty>);
+    }
+    template <typename Ty> Ty Fdegree(Ty rad) {
+        return rad * (pi<Ty> / static_cast<Ty>(180));
+    }
 }

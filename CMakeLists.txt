@@ -14,7 +14,10 @@ add_library               (Force_lib STATIC ${FMATH_HEADER} ${FMATH_SOURCE})
 target_compile_features   (Force_lib PUBLIC cxx_std_20)
 target_include_directories(Force_lib PUBLIC ${INC_PATH})
 
+# Test can be avalable.
+if(FORCE_TEST_ENABLE)
 add_executable            (Force_FMath_test "test/FMathTest.cpp")
 target_compile_features   (Force_FMath_test PUBLIC cxx_std_20)
 target_include_directories(Force_FMath_test PUBLIC ${INC_PATH})
 target_link_libraries     (Force_FMath_test PUBLIC Force_lib)
+endif(FORCE_TEST_ENABLE)
