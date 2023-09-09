@@ -5,9 +5,7 @@
 #include <fmath/Matrices.hpp>
 #include <fmath/Vector.hpp>
 #include <Format.hpp>
+#include <fmath/FnOperate.hpp>
 
 int main(int argc, char* argv[]) {
-
-    Fma::Mat4x4f m = Fma::IdMat<Fma::Mat4x4f>();
-
 }
