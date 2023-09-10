@@ -263,4 +263,7 @@ namespace Fma {
         // Simply use this conversion.
         return Fma::halfpi<float> -Fasin(x);
     }
+    float Fatan(float x) {
+        return x * (-0.1784f * abs(x) - 0.0663f * x * x + 1.0301f);
+    }
 }

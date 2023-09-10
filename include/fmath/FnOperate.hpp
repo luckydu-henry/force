@@ -7,13 +7,32 @@
 /// @copyright © HenryDu 2023. All right reserved.
 ///
 #pragma once
-#include <functional> // for function input (modern C++ should not use C-style function pointers.)
-
+#include "PrMathFn.hpp"
 namespace Fma {
+
     template <typename Ty>
-    using FunaryT  = std::function<Ty(Ty)>;
+    using FunaryT  = Ty(*)(Ty);
     template <typename Ty>
-    using FbinaryT = std::function<Ty(Ty, Ty)>;
+    using FbinaryT = Ty(*)(Ty, Ty);
+
+    // DerivativeMap stores functions derivative
+    // High precision solution
+    // Uses function pointer, so make sure you do not pass in std::function.
+    template <typename Ty, FunaryT<Ty> f>
+    struct CalculusMap { 
+        static constexpr FunaryT<Ty> integral   = nullptr;
+        static constexpr FunaryT<Ty> derivative = nullptr; 
+    };
+    // std::function doesn't have compile time support
+    // So I still use function pointers.
+    template <> struct CalculusMap<float, Fsin> { 
+        static constexpr FunaryT<float> integral   = [](float x)->float { return -Fcos(x); };
+        static constexpr FunaryT<float> derivative = Fcos; 
+    };
+    template <> struct CalculusMap<float, Fcos> { 
+        static constexpr FunaryT<float> integral   = Fsin;
+        static constexpr FunaryT<float> derivative = [](float x)->float {return -Fsin(x); }; 
+    };
 
     // Big-Sigma notation when doing math.
     // Again this is a common solution but not the best.
@@ -34,32 +53,32 @@ namespace Fma {
         for (; i < n + 1; ++i) s *= f(static_cast<Ty>(i));
         return s;
     }
-    // Numerical differential
-    // Precision is very low -- I haven't figured it out. But it's enough to use.
-    // ** If your original function is certain sure then don't use this. **
-    // For example if you want to calculate sin'(x) you just use cos(x)
-    // Instead of doing this , because this is the common solution but not the best.
-    // It's a numerical approximation but as long as you can use math way to simplify just don't use this.
-    template <typename Ty>
-    Ty Fddx(FunaryT<Ty> f, Ty x) {
-        constexpr Ty dx = static_cast<Ty>(std::is_same_v<Ty, float> ? 0.99e-6 : 1e-12);
-        // Center diffrentiation formula
-        // f'(x) approx to below.
-        return (f(x + dx) - f(x - dx)) / (2 * dx); // for float type this precision lost can be very bad
+    // Numerical & Automatic differential
+    // When your function is added to compile time DerivativeMap it uses your function
+    // Otherwise it uses the original definition of derivative which is numerical derivate.
+    template <typename Ty, FunaryT<Ty> f>
+    Ty Fddx(Ty x) {
+        if (CalculusMap<Ty, f>::derivative == nullptr) {
+            constexpr Ty dx = static_cast<Ty>(std::is_same_v<Ty, float> ? 0.99e-6 : 1e-12);
+            // Center diffrentiation formula
+            // f'(x) approx to below.
+            return (f(x + dx) - f(x - dx)) / (2 * dx); // for float type this precision lost can be very bad
+        }
+        return CalculusMap<Ty, f>::derivative(x);
     }
     // Integral -- calculates the indefinite integral of a function f
-    template <typename Ty>
-    Ty Fint(FunaryT<Ty> f, Ty x) {
-        return 0;
+    template <typename Ty, FunaryT<Ty> f>
+    Ty Fint(Ty x) {
+        return CalculusMap<Ty, f>::integral(x);
     }
     // Partial derivative of x
-    template <typename Ty>
-    Ty Fppx(FbinaryT<Ty> f, Ty x, const Ty y) {
+    template <typename Ty, FbinaryT<Ty> f>
+    Ty Fppx(Ty x, const Ty y) {
         return 0;
     }
     // Partial derivative of y
-    template <typename Ty>
-    Ty Fppy(FbinaryT<Ty> f, const Ty x, Ty y) {
+    template <typename Ty, FbinaryT<Ty> f>
+    Ty Fppy(const Ty x, Ty y) {
         return 0;
     }
 }
