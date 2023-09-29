@@ -1,12 +1,12 @@
-#include <fmath/SIMDVector4.hpp>
-#include <fmath/SIMD.hpp>
+#include <fmath/simd_vector4.hpp>
+#include <fmath/simd_decl.hpp>
 #include <emmintrin.h>
 
 #if FMA_COMPILER & FMA_COMPILER_VC
 #pragma warning(disable:4661)
 #endif
 
-namespace Fma {
+namespace force::math {
     // Only supports this two types.
     template class SIMDVector4<float>;
     template class SIMDVector4<int>;
@@ -46,7 +46,7 @@ namespace Fma {
     }
     template <typename Ty>
     inline Ty Intrin_dot(const SIMDType<Ty>& a, const SIMDType<Ty>& b) {
-        static_assert(std::is_same_v<Ty, float>,"Interger vector does not support dot product!");
+        static_assert(std::is_same_v<Ty, float>, "Interger vector does not support dot product!");
 
         if constexpr (std::is_same_v<Ty, float>) {
             auto c = _mm_mul_ps(a, b);
@@ -59,75 +59,75 @@ namespace Fma {
     }
 
     template <typename Ty>
-    SIMDVector4<Ty>::SIMDVector4(SIMDVector4<Ty>::SIMDType t) : mSVec(t) {}
+    SIMDVector4<Ty>::SIMDVector4(SIMDVector4<Ty>::SIMDType t) : idata(t) {}
 
     template <typename Ty>
-    SIMDVector4<Ty>::SIMDVector4() : mSVec(Intrin_set1<Ty>(static_cast<Ty>(0))) {}
+    SIMDVector4<Ty>::SIMDVector4() : idata(Intrin_set1<Ty>(static_cast<Ty>(0))) {}
 
     template <typename Ty>
-    SIMDVector4<Ty>::SIMDVector4(std::initializer_list<Ty> lst) : mSVec(Intrin_set1<Ty>(static_cast<Ty>(0))) {
+    SIMDVector4<Ty>::SIMDVector4(std::initializer_list<Ty> lst) : idata(Intrin_set1<Ty>(static_cast<Ty>(0))) {
         // Then create cache
         auto a = Intrin_load<Ty>(lst.begin());
         // Then copy data
-        mSVec = a;
+        idata = a;
     }
     template <typename Ty>
-    SIMDVector4<Ty>::SIMDVector4(const pipe_type& p) : mSVec(Intrin_set1<Ty>(0)) {
+    SIMDVector4<Ty>::SIMDVector4(const pipe_type& p) : idata(Intrin_set1<Ty>(0)) {
         // Then load data.
-        auto a = Intrin_load<Ty>(p.Data());
+        auto a = Intrin_load<Ty>(p.vdata);
         // Then copy data.
-        mSVec = a;
+        idata = a;
     }
     template <typename Ty>
-    SIMDVector4<Ty>::SIMDVector4(const SIMDVector4<Ty>& right) noexcept : mSVec(right.mSVec) {}
+    SIMDVector4<Ty>::SIMDVector4(const SIMDVector4<Ty>& right) noexcept : idata(right.idata) {}
     template <typename Ty>
-    SIMDVector4<Ty>::SIMDVector4(SIMDVector4<Ty>&& right) noexcept : mSVec(right.mSVec) {}
+    SIMDVector4<Ty>::SIMDVector4(SIMDVector4<Ty>&& right) noexcept : idata(right.idata) {}
 
     template <typename Ty>
     SIMDVector4<Ty>& SIMDVector4<Ty>::operator=(const SIMDVector4<Ty>& right) {
-        mSVec = Intrin_load(right.mData);
+        idata = Intrin_load(right.vdata);
         return *this;
     }
     template <typename Ty>
     SIMDVector4<Ty>& SIMDVector4<Ty>::operator=(const pipe_type& right) {
-        mSVec = Intrin_load(right.Data());
+        idata = Intrin_load(right.vdata);
         return *this;
     }
     template <typename Ty>
     SIMDVector4<Ty>& SIMDVector4<Ty>::operator+=(const SIMDVector4<Ty>& right) {
-        mSVec = Intrin_add<Ty>(mSVec, right.mSVec);
+        idata = Intrin_add<Ty>(idata, right.idata);
         return *this;
     }
     template <typename Ty>
     SIMDVector4<Ty>& SIMDVector4<Ty>::operator-=(const SIMDVector4<Ty>& right) {
-        mSVec = Intrin_sub<Ty>(mSVec, right.mSVec);
+        idata = Intrin_sub<Ty>(idata, right.idata);
         return *this;
     }
     template <typename Ty>
     SIMDVector4<Ty>& SIMDVector4<Ty>::operator*=(const Ty& right) {
-        mSVec = Intrin_mul<Ty>(mSVec, Intrin_set1<Ty>(right));
+        idata = Intrin_mul<Ty>(idata, Intrin_set1<Ty>(right));
         return *this;
     }
     template <typename Ty>
     SIMDVector4<Ty>& SIMDVector4<Ty>::operator/=(const Ty& right) {
-        mSVec = Intrin_div<Ty>(mSVec, Intrin_set1<Ty>(right));
+        idata = Intrin_div<Ty>(idata, Intrin_set1<Ty>(right));
         return *this;
     }
     template <typename Ty>
     const SIMDVector4<Ty> SIMDVector4<Ty>::operator+(const SIMDVector4<Ty>& right) {
-        return Intrin_add<Ty>(mSVec, right.mSVec);
+        return Intrin_add<Ty>(idata, right.idata);
     }
     template <typename Ty>
     const SIMDVector4<Ty> SIMDVector4<Ty>::operator-(const SIMDVector4<Ty>& right) {
-        return Intrin_sub<Ty>(mSVec, right.mSVec);
+        return Intrin_sub<Ty>(idata, right.idata);
     }
     template <typename Ty>
     const SIMDVector4<Ty> SIMDVector4<Ty>::operator*(const Ty& right) {
-        return Intrin_mul<Ty>(mSVec, Intrin_set1<Ty>(right));
+        return Intrin_mul<Ty>(idata, Intrin_set1<Ty>(right));
     }
     template <typename Ty>
     const SIMDVector4<Ty> SIMDVector4<Ty>::operator/(const Ty& right) {
-        return Intrin_div<Ty>(mSVec, Intrin_set1<Ty>(right));
+        return Intrin_div<Ty>(idata, Intrin_set1<Ty>(right));
     }
 
     // Functions.
@@ -135,25 +135,25 @@ namespace Fma {
         return a;
     }
     template <typename Ty> const SIMDVector4<Ty> operator-(const SIMDVector4<Ty>& a) {
-        return Intrin_sub<Ty>(Intrin_set1<Ty>(0), a.IntrinData());
+        return Intrin_sub<Ty>(Intrin_set1<Ty>(0), a.idata);
     }
-    template <typename Ty> const Ty              Dot(const SIMDVector4<Ty>& a, const SIMDVector4<Ty>& b) {
-        return Intrin_dot<Ty>(a.IntrinData(), b.IntrinData());
+    template <typename Ty> const Ty              dot(const SIMDVector4<Ty>& a, const SIMDVector4<Ty>& b) {
+        return Intrin_dot<Ty>(a.idata, b.idata);
     }
-    template <typename Ty> const Ty              Length(const SIMDVector4<Ty>& a) {
-        auto k = Intrin_dot<Ty>(a.IntrinData(), a.IntrinData());
-        return Fsqrt(k);
+    template <typename Ty> const Ty              length(const SIMDVector4<Ty>& a) {
+        auto k = Intrin_dot<Ty>(a.idata, a.idata);
+        return sqrt(k);
     }
-    template <typename Ty> const SIMDVector4<Ty> Norm(const SIMDVector4<Ty>& a) {
-        auto k = Intrin_dot<Ty>(a.IntrinData(), a.IntrinData());
-        k = Frsqrt(k);
-        return Intrin_mul<Ty>(a.IntrinData(), Intrin_set1<Ty>(k));
+    template <typename Ty> const SIMDVector4<Ty> norm(const SIMDVector4<Ty>& a) {
+        auto k = Intrin_dot<Ty>(a.idata, a.idata);
+        k = rsqrt(k);
+        return Intrin_mul<Ty>(a.idata, Intrin_set1<Ty>(k));
     }
     template <typename Ty>
     const bool operator==(const SIMDVector4<Ty>& a, const SIMDVector4<Ty>& b) {
         if constexpr (std::is_same_v<Ty, int>)
-            return _mm_movemask_epi8(_mm_cmpeq_epi32(a.IntrinData(), b.IntrinData())) == 0xffff;
+            return _mm_movemask_epi8(_mm_cmpeq_epi32(a.idata, b.idata)) == 0xffff;
         else if constexpr (std::is_same_v<Ty, float>)
-            return _mm_movemask_ps(_mm_cmpeq_ps(a.IntrinData(), b.IntrinData())) == 0xf;
+            return _mm_movemask_ps(_mm_cmpeq_ps(a.idata, b.idata)) == 0xf;
     }
 }

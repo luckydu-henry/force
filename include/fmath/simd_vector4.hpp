@@ -1,8 +1,9 @@
 #pragma once
 #define  SIMD_VECTOR4x32 true
-#include "BasicVector.hpp"
-#include "SIMD.hpp"
-namespace Fma {
+#include "basic_vector.hpp"
+#include "simd_decl.hpp"
+
+namespace force::math {
 
     // Specialization for SIMDVector4<float, 4, Vec4fPipe>
     // Whic is simd_vector4 uses SSE2 intrinsics (Atleast)
@@ -12,17 +13,15 @@ namespace Fma {
 #if FMA_ARCH & FMA_ARCH_X86
         using SIMDType = typename std::conditional_t<std::is_same_v<Ty, float>, __m128, __m128i>;
 #endif
-    private:
         static_assert(std::is_same_v<Ty, float> | std::is_same_v<Ty, int>, "Not uint32 nor float types are not supported!");
         // Only 4byte types such as int, unsigned int, float support
         union {
-            alignas(16) Ty                 mData[4];
-            SIMDType                       mSVec;
+            alignas(16) Ty                 vdata[4];
+            SIMDType                       idata;
         };
 
-    public:
         using value_type = Ty;
-        using pipe_type  = BasicVectorPipe<Ty, 4>; ;
+        using pipe_type = basic_pipe<Ty, 4>; ;
 
         static constexpr std::size_t dimension = 4;
 
@@ -38,30 +37,28 @@ namespace Fma {
         SIMDVector4(const SIMDVector4& right) noexcept;
         SIMDVector4(SIMDVector4&& right)      noexcept;
 
-        SIMDVector4&          operator=(const SIMDVector4& right);
-        SIMDVector4&          operator=(const pipe_type& v);
-        SIMDVector4&          operator+=(const SIMDVector4& right);
-        SIMDVector4&          operator-=(const SIMDVector4& right);
-        SIMDVector4&          operator*=(const value_type& k);
-        SIMDVector4&          operator/=(const value_type& k);
+        SIMDVector4& operator=(const SIMDVector4& right);
+        SIMDVector4& operator=(const pipe_type& v);
+        SIMDVector4& operator+=(const SIMDVector4& right);
+        SIMDVector4& operator-=(const SIMDVector4& right);
+        SIMDVector4& operator*=(const value_type& k);
+        SIMDVector4& operator/=(const value_type& k);
 
         const SIMDVector4     operator+(const SIMDVector4& right);
         const SIMDVector4     operator-(const SIMDVector4& right);
         const SIMDVector4     operator*(const value_type& k);
         const SIMDVector4     operator/(const value_type& k);
 
-        value_type&           operator[](size_t i)        { return mData[i]; }
-        const value_type&     operator[](size_t i) const  { return mData[i]; }
-        const value_type*     Data() const                { return mData; }
-        const SIMDType&       IntrinData() const          { return mSVec; }
-        pipe_type             operator*() const { return BasicVectorPipe<Ty, 4>(mData, 4); }
+        value_type&       operator[](size_t i) { return vdata[i]; }
+        const value_type& operator[](size_t i) const { return vdata[i]; }
+        pipe_type         operator*() const { return basic_pipe<Ty, 4>(vdata, 4); }
 
         // This one can't have simd optimization.
         template <typename ... Indecies, std::size_t ArgDim = sizeof...(Indecies)>
-        BasicVector<Ty, ArgDim, BasicVectorPipe<Ty, 4>>        operator()(Indecies ... idx) const {
-            BasicVector<Ty, ArgDim, BasicVectorPipe<Ty, 4>>  rVec{};
+        basic_vector<Ty, ArgDim, basic_pipe<Ty, 4>>        operator()(Indecies ... idx) const {
+            basic_vector<Ty, ArgDim, basic_pipe<Ty, 4>>  rVec{};
             std::initializer_list<std::size_t>  ids = { (std::size_t)idx... };
-            for (std::size_t i = 0; i < ArgDim; ++i) rVec[i] = mData[*(ids.begin() + i)];
+            for (std::size_t i = 0; i < ArgDim; ++i) rVec[i] = vdata[*(ids.begin() + i)];
             return rVec;
         }
 
@@ -72,9 +69,9 @@ namespace Fma {
     template <typename Ty> const SIMDVector4<Ty> operator- (const SIMDVector4<Ty>& a);
     template <typename Ty> const bool            operator==(const SIMDVector4<Ty>& a, const SIMDVector4<Ty>& b);
 
-    template <typename Ty> const Ty              Length(const SIMDVector4<Ty>& a);
-    template <typename Ty> const Ty              Dot   (const SIMDVector4<Ty>& a, const SIMDVector4<Ty>& b);
-    template <typename Ty> const SIMDVector4<Ty> Norm  (const SIMDVector4<Ty>& a);
+    template <typename Ty> const Ty              length(const SIMDVector4<Ty>& a);
+    template <typename Ty> const Ty              dot(const SIMDVector4<Ty>& a, const SIMDVector4<Ty>& b);
+    template <typename Ty> const SIMDVector4<Ty> norm(const SIMDVector4<Ty>& a);
 
 
     ////////////////////////////////////////////////////////////////////
@@ -87,8 +84,8 @@ namespace Fma {
     template const bool               operator==(const SIMDVector4<float>& a, const SIMDVector4<float>& b);
     template const bool               operator==(const SIMDVector4<int>& a, const SIMDVector4<int>& b);
 
-    template const float              Length(const SIMDVector4<float>& a);
-    template const float              Dot   (const SIMDVector4<float>& a, const SIMDVector4<float>& b);
-    template const SIMDVector4<float> Norm  (const SIMDVector4<float>& a);
+    template const float              length(const SIMDVector4<float>& a);
+    template const float              dot(const SIMDVector4<float>& a, const SIMDVector4<float>& b);
+    template const SIMDVector4<float> norm(const SIMDVector4<float>& a);
 
 }

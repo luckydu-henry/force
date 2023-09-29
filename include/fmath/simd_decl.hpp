@@ -110,7 +110,7 @@
 #define FMA_MODEL_32				0x00000010
 #define FMA_MODEL_64				0x00000020
 
-// Force generic C++ compiler
+// orce generic C++ compiler
 #ifdef FMA_FORCE_COMPILER_UNKNOWN
 #	define FMA_COMPILER FMA_COMPILER_UNKNOWN
 
@@ -124,7 +124,7 @@
 #	elif __INTEL_COMPILER >= 1400
 #		define FMA_COMPILER FMA_COMPILER_INTEL14
 #	elif __INTEL_COMPILER < 1400
-#		error "FMA requires ICC 2013 SP1 or newer"
+#		error "MA requires ICC 2013 SP1 or newer"
 #	endif
 
 // CUDA
@@ -141,7 +141,7 @@
 #	elif CUDA_VERSION >= 7000
 #		define FMA_COMPILER FMA_COMPILER_CUDA70
 #	elif CUDA_VERSION < 7000
-#		error "FMA requires CUDA 7.0 or higher"
+#		error "MA requires CUDA 7.0 or higher"
 #	endif
 
 // HIP
@@ -156,7 +156,7 @@
 #elif defined(__clang__)
 #	if defined(__apple_build_version__)
 #		if (__clang_major__ < 6)
-#			error "FMA requires Clang 3.4 / Apple Clang 6.0 or higher"
+#			error "MA requires Clang 3.4 / Apple Clang 6.0 or higher"
 #		elif __clang_major__ == 6 && __clang_minor__ == 0
 #			define FMA_COMPILER FMA_COMPILER_CLANG35
 #		elif __clang_major__ == 6 && __clang_minor__ >= 1
@@ -166,7 +166,7 @@
 #		endif
 #	else
 #		if ((__clang_major__ == 3) && (__clang_minor__ < 4)) || (__clang_major__ < 3)
-#			error "FMA requires Clang 3.4 or higher"
+#			error "MA requires Clang 3.4 or higher"
 #		elif __clang_major__ == 3 && __clang_minor__ == 4
 #			define FMA_COMPILER FMA_COMPILER_CLANG34
 #		elif __clang_major__ == 3 && __clang_minor__ == 5
@@ -213,7 +213,7 @@
 #	elif _MSC_VER >= 1800
 #		define FMA_COMPILER FMA_COMPILER_VC12
 #	elif _MSC_VER < 1800
-#		error "FMA requires Visual C++ 12 - 2013 or higher"
+#		error "MA requires Visual C++ 12 - 2013 or higher"
 #	endif //_MSC_VER
 
 // G++
@@ -235,7 +235,7 @@
 #	elif __GNUC__ == 4 && __GNUC_MINOR__ >= 6
 #		define FMA_COMPILER FMA_COMPILER_GCC46
 #	elif ((__GNUC__ == 4) && (__GNUC_MINOR__ < 6)) || (__GNUC__ < 4)
-#		error "FMA requires GCC 4.6 or higher"
+#		error "MA requires GCC 4.6 or higher"
 #	endif
 
 #else
@@ -243,7 +243,7 @@
 #endif
 
 #ifndef FMA_COMPILER
-#	error "FMA_COMPILER undefined, your compiler may not be supported by FMA. Add #define FMA_COMPILER 0 to ignore this message."
+#	error "FMA_COMPILER undefined, your compiler may not be supported by MA. Add #define FMA_COMPILER 0 to ignore this message."
 #endif //FMA_COMPILER
 
 ///////////////////////////////////////////////////////////////////////////////////
